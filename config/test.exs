@@ -7,7 +7,7 @@ import Config
 # Run `mix help test` for more information.
 config :meme_game, MemeGame.Repo,
   username: "postgres",
-  password: "postgres",
+  password: "password",
   hostname: "localhost",
   database: "meme_game_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
