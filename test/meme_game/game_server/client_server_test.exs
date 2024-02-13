@@ -1,21 +1,21 @@
 defmodule MemeGame.ClientServerTest do
-   use MemeGame.DataCase
-   use ExUnit.Case, async: true
-   
-   import MemeGame.Factory
+  use MemeGame.DataCase
+  use ExUnit.Case, async: true
 
-   setup do
-        game = build(:game)
-        {:ok, %{game: game}}
-   end
+  import MemeGame.Factory
 
-    describe "broadcast_game_update/1" do
-        test "should broadcast the game as payload and 'update' as event to the pubsub", %{game: game} do
-           Phoenix.PubSub.subscribe(MemeGame.PubSub, MemeGame.PubSub.game_topic(game))
+  setup do
+    game = build(:game)
+    {:ok, %{game: game}}
+  end
 
-           MemeGame.GameServer.broadcast_game_update(game)
+  describe "broadcast_game_update/1" do
+    test "should broadcast the game as payload and 'update' as event to the pubsub", %{game: game} do
+      Phoenix.PubSub.subscribe(MemeGame.PubSub, MemeGame.PubSub.game_topic(game))
 
-           assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: ^game}
-        end
-   end
+      MemeGame.GameServer.broadcast_game_update(game)
+
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: ^game}
+    end
+  end
 end

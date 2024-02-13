@@ -82,7 +82,8 @@ defmodule MemeGame.MixProject do
         "tailwind meme_game --minify",
         "esbuild meme_game --minify",
         "phx.digest"
-      ]
+      ],
+      quality: ["format", "credo --strict", "dialyzer"]
     ]
   end
 end

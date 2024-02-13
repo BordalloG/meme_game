@@ -1,4 +1,3 @@
-
 defmodule MemeGame.GameFactory do
   @moduledoc """
     Defines the factory for MemeGame.Game

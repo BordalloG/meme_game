@@ -6,5 +6,4 @@ defmodule MemeGame.Factory do
   use ExMachina.Ecto, repo: MemeGame.Repo
   use MemeGame.PlayerFactory
   use MemeGame.GameFactory
-
 end
