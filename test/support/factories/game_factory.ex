@@ -9,7 +9,8 @@ defmodule MemeGame.GameFactory do
           id: "123ABC",
           owner: build(:player),
           stage: "wait",
-          players: build_list(4, :player)
+          players: build_list(2, :player),
+          settings: build(:settings)
         }
       end
     end

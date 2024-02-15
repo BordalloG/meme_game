@@ -6,7 +6,7 @@ defmodule MemeGame.Game do
   require Logger
 
   alias MemeGame.Game
-  alias MemeGame.Game.Player
+  alias MemeGame.Game.{Player, Settings}
 
   use Machinery,
     field: :stage,
@@ -23,10 +23,11 @@ defmodule MemeGame.Game do
           id: String.t(),
           owner: Player.t(),
           stage: String.t(),
-          players: [Player.t()]
+          players: [Player.t()],
+          settings: Settings.t()
         }
 
-  defstruct [:id, :owner, stage: "wait", players: []]
+  defstruct [:id, :owner, stage: "wait", players: [], settings: %Settings{}]
 
   require Machinery
 
@@ -68,6 +69,50 @@ defmodule MemeGame.Game do
       {:ok, game}
     else
       {:error, "At least two players are necessary to start the game."}
+    end
+  end
+
+  @spec can_join?(Game.t(), Player.t()) :: {:ok, Game.t()} | {:error, [String.t()]}
+  def can_join?(game, player) do
+    validations = [
+      game_full?(game),
+      player_has_valid_nick?(player),
+      nick_available?(game, player)
+    ]
+
+    errors = for {:error, reason} <- validations, do: reason
+
+    if Enum.any?(errors) do
+      {:error, errors}
+    else
+      {:ok, game}
+    end
+  end
+
+  @spec game_full?(Game.t()) :: {:ok, Game.t()} | {:error, String.t()}
+  defp game_full?(game) do
+    if length(game.players) >= game.settings.max_players do
+      {:error, "Game is already full"}
+    else
+      {:ok, game}
+    end
+  end
+
+  @spec player_has_valid_nick?(Player.t()) :: {:ok, Player.t()} | {:error, String.t()}
+  defp player_has_valid_nick?(player) do
+    if String.trim(player.nick) == "" do
+      {:error, "Empty nicks are not allowed"}
+    else
+      {:ok, player}
+    end
+  end
+
+  @spec nick_available?(Game.t(), Player.t()) :: {:ok, Game.t()} | {:error, String.t()}
+  defp nick_available?(game, player) do
+    if Enum.any?(game.players, fn p -> p.nick == player.nick end) do
+      {:error, "This nick is already in use"}
+    else
+      {:ok, game}
     end
   end
 end

@@ -57,4 +57,50 @@ defmodule MemeGame.GameTest do
       assert updated_game.stage == "wait"
     end
   end
+
+  describe "can_join?/2" do
+    test "a valid player should be able to join the game" do
+      owner = build(:player)
+      game = build(:game, %{owner: owner, players: [owner]})
+      new_player = build(:player, %{nick: "John"})
+
+      assert {:ok, _game} = MemeGame.Game.can_join?(game, new_player)
+    end
+
+    test "a new player should not be able to join when game room is full" do
+      owner = build(:player)
+      game_settings = build(:settings)
+
+      game =
+        build(
+          :game,
+          %{owner: owner, players: [owner] ++ build_list(game_settings.max_players, :player)}
+        )
+
+      new_player = build(:player, %{nick: "Beth"})
+
+      assert {:error, ["Game is already full"]} = MemeGame.Game.can_join?(game, new_player)
+    end
+
+    test "a new player should not be able to join when it's nick is empty" do
+      game = build(:game)
+
+      new_players =
+        [build(:player, %{nick: ""}), build(:player, %{nick: " "}), build(:player, %{nick: "  "})]
+
+      expected_error = {:error, ["Empty nicks are not allowed"]}
+
+      Enum.each(new_players, fn new_player ->
+        assert expected_error == MemeGame.Game.can_join?(game, new_player)
+      end)
+    end
+
+    test "a new player should not be able to join with a nick of another player" do
+      game = build(:game)
+      new_player = build(:player, %{nick: game.owner.nick})
+
+      assert {:error, ["This nick is already in use"]} ==
+               MemeGame.Game.can_join?(game, new_player)
+    end
+  end
 end
