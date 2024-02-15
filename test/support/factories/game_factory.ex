@@ -8,7 +8,8 @@ defmodule MemeGame.GameFactory do
         %MemeGame.Game{
           id: "123ABC",
           owner: build(:player),
-          stage: "wait"
+          stage: "wait",
+          players: build_list(4, :player)
         }
       end
     end

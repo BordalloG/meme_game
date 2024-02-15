@@ -15,6 +15,16 @@ defmodule MemeGame.GameTest do
       assert updated_game.stage == "design"
     end
 
+    test "wait -> error when there aren't enought players" do
+      owner = build(:player)
+      game = build(:game, %{stage: "wait", owner: owner, players: [owner]})
+
+      assert length(game.players) < 2
+
+      assert {:error, "At least two players are necessary to start the game."} =
+               Game.next_stage(game)
+    end
+
     test "design -> vote when transition is valid" do
       game = build(:game, %{stage: "design"})
 

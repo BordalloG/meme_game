@@ -22,10 +22,11 @@ defmodule MemeGame.Game do
   @type t :: %__MODULE__{
           id: String.t(),
           owner: Player.t(),
-          stage: String.t()
+          stage: String.t(),
+          players: [Player.t()]
         }
 
-  defstruct [:id, :owner, stage: "wait"]
+  defstruct [:id, :owner, stage: "wait", players: []]
 
   require Machinery
 
@@ -39,7 +40,10 @@ defmodule MemeGame.Game do
 
   @spec next_stage(Game.t()) :: {:ok, Game.t()} | {:error, String.t()}
   def next_stage(%Game{stage: "wait"} = game) do
-    transition_to(game, "design")
+    case can_start_game?(game) do
+      {:ok, game} -> transition_to(game, "design")
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   def next_stage(%Game{stage: "design"} = game) do
@@ -56,5 +60,14 @@ defmodule MemeGame.Game do
 
   def next_stage(%Game{stage: "scoreboard"} = game) do
     transition_to(game, "wait")
+  end
+
+  @spec can_start_game?(Game.t()) :: {:ok, Game.t()} | {:error, String.t()}
+  defp can_start_game?(game) do
+    if length(game.players) >= 2 do
+      {:ok, game}
+    else
+      {:error, "At least two players are necessary to start the game."}
+    end
   end
 end
