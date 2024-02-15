@@ -9,7 +9,7 @@ defmodule MemeGame.GameServer do
 
   alias MemeGame.Game
 
-  @spec init(map()) :: {atom(), Game.t()}
+  @spec init(map()) :: {atom, Game.t()}
   def init(%{room_id: room_id, owner: owner}) do
     Logger.info("Starting new game server - room_id: #{room_id}")
     Phoenix.PubSub.subscribe(MemeGame.PubSub, room_id)
