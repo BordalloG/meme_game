@@ -60,7 +60,8 @@ defmodule MemeGame.MixProject do
       {:bandit, "~> 1.2"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:ex_machina, "~> 2.7.0", only: :test}
+      {:ex_machina, "~> 2.7.0", only: :test},
+      {:machinery, "~> 1.1.0"}
     ]
   end
 
