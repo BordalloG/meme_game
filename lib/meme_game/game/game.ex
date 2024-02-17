@@ -2,6 +2,7 @@ defmodule MemeGame.Game do
   @moduledoc """
       Representation of a Game, as well as it's validations and stages
   """
+  import MemeGameWeb.Gettext
 
   require Logger
 
@@ -68,7 +69,7 @@ defmodule MemeGame.Game do
     if length(game.players) >= 2 do
       {:ok, game}
     else
-      {:error, "At least two players are necessary to start the game."}
+      {:error, dgettext("errors", "At least two players are necessary to start the game.")}
     end
   end
 
@@ -92,7 +93,7 @@ defmodule MemeGame.Game do
   @spec game_full?(Game.t()) :: {:ok, Game.t()} | {:error, String.t()}
   defp game_full?(game) do
     if length(game.players) >= game.settings.max_players do
-      {:error, "Game is already full"}
+      {:error, dgettext("errors", "Game is already full")}
     else
       {:ok, game}
     end
@@ -101,7 +102,7 @@ defmodule MemeGame.Game do
   @spec player_has_valid_nick?(Player.t()) :: {:ok, Player.t()} | {:error, String.t()}
   defp player_has_valid_nick?(player) do
     if String.trim(player.nick) == "" do
-      {:error, "Empty nicks are not allowed"}
+      {:error, dgettext("errors", "Empty nicks are not allowed")}
     else
       {:ok, player}
     end
@@ -110,7 +111,7 @@ defmodule MemeGame.Game do
   @spec nick_available?(Game.t(), Player.t()) :: {:ok, Game.t()} | {:error, String.t()}
   defp nick_available?(game, player) do
     if Enum.any?(game.players, fn p -> p.nick == player.nick end) do
-      {:error, "This nick is already in use"}
+      {:error, dgettext("errors", "This nick is already in use")}
     else
       {:ok, game}
     end

@@ -110,3 +110,23 @@ msgstr ""
 
 msgid "must be equal to %{number}"
 msgstr ""
+
+#: lib/meme_game/game/game.ex:72
+#, elixir-autogen, elixir-format
+msgid "At least two players are necessary to start the game."
+msgstr ""
+
+#: lib/meme_game/game/game.ex:105
+#, elixir-autogen, elixir-format
+msgid "Empty nicks are not allowed"
+msgstr ""
+
+#: lib/meme_game/game/game.ex:96
+#, elixir-autogen, elixir-format
+msgid "Game is already full"
+msgstr ""
+
+#: lib/meme_game/game/game.ex:114
+#, elixir-autogen, elixir-format
+msgid "This nick is already in use"
+msgstr ""

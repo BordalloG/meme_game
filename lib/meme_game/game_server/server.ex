@@ -3,6 +3,8 @@ defmodule MemeGame.GameServer do
       Module that manage game stages, actions and broadcasts
   """
 
+  import MemeGameWeb.Gettext
+
   use GenServer
 
   require Logger
@@ -10,8 +12,9 @@ defmodule MemeGame.GameServer do
   alias MemeGame.Game
 
   @spec init(map()) :: {atom, Game.t()}
-  def init(%{room_id: room_id, owner: owner}) do
+  def init(%{room_id: room_id, owner: owner, locale: locale}) do
     Logger.info("Starting new game server - room_id: #{room_id}")
+    Gettext.put_locale(locale)
     Phoenix.PubSub.subscribe(MemeGame.PubSub, room_id)
     game = %Game{id: room_id, owner: owner}
 
