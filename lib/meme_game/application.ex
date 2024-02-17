@@ -17,7 +17,9 @@ defmodule MemeGame.Application do
       # Start a worker by calling: MemeGame.Worker.start_link(arg)
       # {MemeGame.Worker, arg},
       # Start to serve requests, typically the last entry
-      MemeGameWeb.Endpoint
+      MemeGameWeb.Endpoint,
+      # Start the Server Supervisor
+      MemeGame.GameServer.Supervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
