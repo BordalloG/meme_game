@@ -22,6 +22,8 @@ defmodule MemeGame.Application do
       MemeGame.GameServer.Supervisor
     ]
 
+    :ets.new(:server_name, [:set, :public, :named_table])
+
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: MemeGame.Supervisor]

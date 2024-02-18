@@ -3,8 +3,6 @@ defmodule MemeGame.GameServer do
       Module that manage game stages, actions and broadcasts
   """
 
-  import MemeGameWeb.Gettext
-
   use GenServer
 
   require Logger
