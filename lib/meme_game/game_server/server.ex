@@ -10,11 +10,11 @@ defmodule MemeGame.GameServer do
   alias MemeGame.Game
 
   @spec init(map()) :: {atom, Game.t()}
-  def init(%{room_id: room_id, owner: owner, locale: locale}) do
-    Logger.info("Starting new game server - room_id: #{room_id}")
+  def init(%{game_id: game_id, owner: owner, locale: locale}) do
+    Logger.info("Starting new game server - game_id: #{game_id}")
     Gettext.put_locale(locale)
-    Phoenix.PubSub.subscribe(MemeGame.PubSub, room_id)
-    game = %Game{id: room_id, owner: owner}
+    Phoenix.PubSub.subscribe(MemeGame.PubSub, game_id)
+    game = %Game{id: game_id, owner: owner}
 
     {:ok, game}
   end

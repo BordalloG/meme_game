@@ -5,7 +5,7 @@ defmodule MemeGame.GameServer.ServerName do
 
   @table_name :server_name
 
-  @spec put_game_pid(String.t(), pid()) :: boolean()
+  @spec put_game_pid(String.t(), pid()) :: true
   def put_game_pid(game_id, pid) do
     :ets.insert(@table_name, {game_id, pid})
   end
