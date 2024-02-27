@@ -5,9 +5,11 @@ defmodule MemeGame.PubSub do
 
   alias MemeGame.Game
 
-  def game_topic(game) do
-    "game:#{game.id}"
-  end
+  @spec game_topic(String.t()) :: String.t()
+  def game_topic(game_id) when is_binary(game_id), do: "game:#{game_id}"
+
+  @spec game_topic(Game.t()) :: String.t()
+  def game_topic(game), do: "game:#{game.id}"
 
   @spec broadcast_game(String.t(), Game.t()) :: atom
   def broadcast_game(event, game) do

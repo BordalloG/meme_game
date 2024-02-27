@@ -18,6 +18,8 @@ defmodule MemeGameWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    live "/game/:game_id/inspect", Game.InspectLive
   end
 
   # Other scopes may use custom stacks.

@@ -10,8 +10,12 @@ defmodule MemeGame.PubSubTest do
   end
 
   describe "game_topic/1" do
-    test "should return a string containing game: + game id", %{game: game} do
+    test "should return a string in the expect format", %{game: game} do
       assert "game:" <> game.id == MemeGame.PubSub.game_topic(game)
+    end
+
+    test "should return a string in the expect format when arg is string", %{game: game} do
+      assert "game:" <> game.id == MemeGame.PubSub.game_topic(game.id)
     end
   end
 
