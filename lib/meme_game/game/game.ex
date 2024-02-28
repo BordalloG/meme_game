@@ -37,6 +37,7 @@ defmodule MemeGame.Game do
   @spec transition_to(Game.t(), String.t()) :: {:ok, Game.t()} | {:error, String.t()}
   def transition_to(game, stage) do
     Logger.info("Game id #{game.id} transitioning from #{game.stage} to #{stage}")
+
     Machinery.transition_to(game, __MODULE__, stage)
   end
 
