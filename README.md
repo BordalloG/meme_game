@@ -1,5 +1,7 @@
 # MemeGame
 
+If you have asdf you should be good to just run `asdf install` in project path to install elixir and erlang
+
 To start your Phoenix server:
 
   * Run `mix setup` to install and setup dependencies
