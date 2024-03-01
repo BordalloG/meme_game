@@ -37,7 +37,6 @@ defmodule MemeGameWeb.Game.InspectLive do
         <p class="p-1 mt-2 bg-slate-100 rounded"><%= inspect(message.payload) %></p>
       </div>
     </div>
-    <button class="bg-color:blue-200 rounded" phx-click="event">event</button>
     """
   end
 end

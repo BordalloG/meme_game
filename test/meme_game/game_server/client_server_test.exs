@@ -81,4 +81,14 @@ defmodule MemeGame.ClientServerTest do
       assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: ^game}
     end
   end
+
+  describe "broadcast_game_error/2" do
+    test "should broadcast the error as the payload and 'error' as event to the pubsub", %{game: game} do
+      Phoenix.PubSub.subscribe(MemeGame.PubSub, MemeGame.PubSub.game_topic(game))
+
+      MemeGame.GameServer.broadcast_game_error(game, :error)
+
+      assert_receive %Phoenix.Socket.Broadcast{event: "error", payload: :error}
+    end
+  end
 end
