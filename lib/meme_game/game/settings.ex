@@ -3,8 +3,9 @@ defmodule MemeGame.Game.Settings do
     Module for managing game settings.
   """
   @type t :: %__MODULE__{
-          max_players: integer()
+          max_players: integer(),
+          rounds: integer()
         }
 
-  defstruct max_players: 4
+  defstruct max_players: 4, rounds: 4
 end

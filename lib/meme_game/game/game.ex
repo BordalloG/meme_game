@@ -25,10 +25,11 @@ defmodule MemeGame.Game do
           owner: Player.t(),
           stage: String.t(),
           players: [Player.t()],
-          settings: Settings.t()
+          settings: Settings.t(),
+          round: integer()
         }
 
-  defstruct [:id, :owner, stage: "wait", players: [], settings: %Settings{}]
+  defstruct [:id, :owner, stage: "wait", players: [], settings: %Settings{}, round: 1]
 
   require Machinery
 
@@ -62,6 +63,7 @@ defmodule MemeGame.Game do
   end
 
   def next_stage(%Game{stage: "scoreboard"} = game) do
+    game = %{game | round: game.round + 1}
     transition_to(game, "wait")
   end
 

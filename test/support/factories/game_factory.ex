@@ -10,7 +10,8 @@ defmodule MemeGame.GameFactory do
           owner: build(:player),
           stage: "wait",
           players: build_list(2, :player),
-          settings: build(:settings)
+          settings: build(:settings),
+          round: 1
         }
       end
     end

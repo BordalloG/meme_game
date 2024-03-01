@@ -6,7 +6,8 @@ defmodule MemeGame.SettingsFactory do
     quote do
       def settings_factory do
         %MemeGame.Game.Settings{
-          max_players: 4
+          max_players: 4,
+          rounds: 4
         }
       end
     end
