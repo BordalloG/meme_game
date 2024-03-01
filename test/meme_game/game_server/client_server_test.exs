@@ -2,6 +2,8 @@ defmodule MemeGame.ClientServerTest do
   use MemeGame.DataCase
   use ExUnit.Case, async: true
 
+  alias MemeGame.GameServer.Client
+
   import MemeGame.Factory
 
   setup do
@@ -15,9 +17,9 @@ defmodule MemeGame.ClientServerTest do
   describe "init" do
     test "starting a game should add owner as a player" do
       game = build(:game)
-      {:ok, pid} = MemeGame.GameServer.Supervisor.start_new_game_server(game.id, game.owner)
+      {:ok, _pid} = MemeGame.GameServer.Supervisor.start_new_game_server(game.id, game.owner)
 
-      game = GenServer.call(pid, :state)
+      game = Client.state(game.id)
 
       assert Enum.any?(game.players, fn p -> p == game.owner end)
       assert length(game.players) == 1
@@ -25,17 +27,18 @@ defmodule MemeGame.ClientServerTest do
   end
 
   describe "call state" do
-    test "should return current game state", %{pid: pid, game: game} do
-      assert %MemeGame.Game{} = response = GenServer.call(pid, :state)
+    test "should return current game state", %{game: game} do
+      assert %MemeGame.Game{} = response = Client.state(game.id)
       assert response.id == game.id
       assert response.owner == game.owner
     end
   end
 
   describe "cast join" do
-    test "should add a player to the players list", %{pid: pid} do
+    test "should add a player to the players list", %{game: game} do
       player = build(:player)
-      GenServer.cast(pid, {:join, player})
+
+      Client.join(game.id, player)
 
       assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: payload}
       assert Enum.any?(payload.players, fn p -> p == player end)
@@ -43,9 +46,9 @@ defmodule MemeGame.ClientServerTest do
   end
 
   describe "cast next_game_stage" do
-    test "should broadcast an error when transition to next stage fails", %{pid: pid} do
-      game = GenServer.call(pid, :state)
-      GenServer.cast(pid, :next_stage)
+    test "should broadcast an error when transition to next stage fails", %{game: game} do
+      game = Client.state(game.id)
+      Client.next_stage(game.id)
 
       assert game.stage == "wait"
       assert length(game.players) < 2
@@ -56,11 +59,11 @@ defmodule MemeGame.ClientServerTest do
       }
     end
 
-    test "should broadcast the game when transition to next stage succeed", %{pid: pid} do
+    test "should broadcast the game when transition to next stage succeed", %{game: game} do
       player = build(:player, %{nick: "Aleph"})
-      GenServer.cast(pid, {:join, player})
+      Client.join(game.id, player)
 
-      GenServer.cast(pid, :next_stage)
+      Client.next_stage(game.id)
 
       assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _join_response}
       assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: game}
