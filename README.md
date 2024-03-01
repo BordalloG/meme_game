@@ -2,6 +2,8 @@
 
 If you have asdf you should be good to just run `asdf install` in project path to install elixir and erlang
 
+You can run `docker-compose -f docker/docker-compose.yml up -d` to have a PostgreSQL instance running. 
+
 To start your Phoenix server:
 
   * Run `mix setup` to install and setup dependencies
