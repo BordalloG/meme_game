@@ -26,7 +26,7 @@ defmodule MemeGame.ClientServerTest do
     end
   end
 
-  describe "call state" do
+  describe "state/1" do
     test "should return current game state", %{game: game} do
       assert %MemeGame.Game{} = response = Client.state(game.id)
       assert response.id == game.id
@@ -34,7 +34,7 @@ defmodule MemeGame.ClientServerTest do
     end
   end
 
-  describe "cast join" do
+  describe "join/2" do
     test "should add a player to the players list", %{game: game} do
       player = build(:player)
 
@@ -45,7 +45,18 @@ defmodule MemeGame.ClientServerTest do
     end
   end
 
-  describe "cast next_game_stage" do
+  describe "leave/2" do
+    test "should remove a player from the players list", %{game: game} do
+      player = build(:player)
+
+      Client.leave(game.id, player)
+
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: payload}
+      refute Enum.any?(payload.players, fn p -> p == player end)
+    end
+  end
+
+  describe "next_stage/1" do
     test "should broadcast an error when transition to next stage fails", %{game: game} do
       game = Client.state(game.id)
       Client.next_stage(game.id)
@@ -83,7 +94,9 @@ defmodule MemeGame.ClientServerTest do
   end
 
   describe "broadcast_game_error/2" do
-    test "should broadcast the error as the payload and 'error' as event to the pubsub", %{game: game} do
+    test "should broadcast the error as the payload and 'error' as event to the pubsub", %{
+      game: game
+    } do
       Phoenix.PubSub.subscribe(MemeGame.PubSub, MemeGame.PubSub.game_topic(game))
 
       MemeGame.GameServer.broadcast_game_error(game, :error)

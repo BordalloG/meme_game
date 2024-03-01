@@ -19,6 +19,11 @@ defmodule MemeGame.GameServer.Client do
     cast(game_id, {:join, player})
   end
 
+  @spec leave(game_id, Player.t()) :: :ok
+  def leave(game_id, player) do
+    cast(game_id, {:leave, player})
+  end
+
   @spec next_stage(game_id) :: :ok
   def next_stage(game_id) do
     cast(game_id, :next_stage)

@@ -8,6 +8,7 @@ defmodule MemeGame.GameServer do
   require Logger
 
   alias MemeGame.Game
+  alias MemeGame.Game.Player
 
   @spec init(map()) :: {atom, Game.t()}
   def init(%{game_id: game_id, owner: owner, locale: locale}) do
@@ -28,8 +29,17 @@ defmodule MemeGame.GameServer do
     {:reply, game, game}
   end
 
+  @spec handle_cast({:join, Player.t()}, Game.t()) :: {:noreply, Game.t()}
   def handle_cast({:join, player}, game) do
     game = %{game | players: [player | game.players]}
+
+    broadcast_game_update(game)
+    {:noreply, game}
+  end
+
+  @spec handle_cast({:leave, Player.t()}, Game.t()) :: {:noreply, Game.t()}
+  def handle_cast({:leave, player}, game) do
+    game = %{game | players: Enum.filter(game.players, fn p -> p != player end)}
 
     broadcast_game_update(game)
     {:noreply, game}
