@@ -55,17 +55,17 @@ defmodule MemeGame.GameTest do
       {:ok, updated_game} = Game.next_stage(game)
 
       assert updated_game.stage == "wait"
-      assert updated_game.round == game.round + 1
+      assert updated_game.current_round == game.current_round + 1
     end
 
-    test "scoreboard -> end when current round is the last round" do
+    test "scoreboard -> end when current_round is the last round" do
       settings = build(:settings, %{rounds: 1})
       game = build(:game, %{stage: "scoreboard", settings: settings})
 
       {:ok, updated_game} = Game.next_stage(game)
 
-      assert updated_game.stage == "wait"
-      assert updated_game.round == game.round + 1
+      assert updated_game.stage == "end"
+      assert updated_game.current_round == game.current_round
     end
   end
 

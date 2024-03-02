@@ -63,8 +63,12 @@ defmodule MemeGame.Game do
   end
 
   def next_stage(%Game{stage: "scoreboard"} = game) do
-    game = %{game | round: game.round + 1}
-    transition_to(game, "wait")
+    if game.current_round == game.settings.rounds do
+      transition_to(game, "end")
+    else
+      game = %{game | current_round: game.current_round + 1}
+      transition_to(game, "wait")
+    end
   end
 
   @spec can_start_game?(Game.t()) :: {:ok, Game.t()} | {:error, String.t()}
