@@ -1,10 +1,28 @@
 defmodule MemeGame.GameTest do
+
   use MemeGame.DataCase
   use ExUnit.Case, async: true
 
   import MemeGame.Factory
 
   alias MemeGame.Game
+  alias MemeGame.Game.Round
+
+  describe "current_round/1" do
+    test "should return the round struct for the current round" do
+      game = build(:game, %{rounds: [build(:round)]})
+
+      assert %Round{} = round = Game.current_round(game)
+      assert round.number == game.current_round
+    end
+
+    test "should return the round struct for the current round even if its not the first round" do
+      game = build(:game, %{current_round: 2, rounds: [build(:round), build(:round, %{number: 2})]})
+
+      assert %Round{} = round = Game.current_round(game)
+      assert round.number == game.current_round
+    end
+  end
 
   describe "next_stage/1" do
     test "wait -> design when transition is valid" do

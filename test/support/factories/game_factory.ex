@@ -11,7 +11,8 @@ defmodule MemeGame.GameFactory do
           stage: "wait",
           players: build_list(2, :player),
           settings: build(:settings),
-          round: 1
+          current_round: 1,
+          rounds: []
         }
       end
     end

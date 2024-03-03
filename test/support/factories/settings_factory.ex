@@ -1,6 +1,6 @@
 defmodule MemeGame.SettingsFactory do
   @moduledoc """
-    Defines the factory for MemeGame.Game.Player
+    Defines the factory for MemeGame.Game.Settings
   """
   defmacro __using__(_opts) do
     quote do

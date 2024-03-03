@@ -7,7 +7,7 @@ defmodule MemeGame.Game do
   require Logger
 
   alias MemeGame.Game
-  alias MemeGame.Game.{Player, Settings}
+  alias MemeGame.Game.{Player, Round, Settings}
 
   use Machinery,
     field: :stage,
@@ -26,14 +26,28 @@ defmodule MemeGame.Game do
           stage: String.t(),
           players: [Player.t()],
           settings: Settings.t(),
-          round: integer()
+          current_round: integer(),
+          rounds: [Round.t()]
         }
 
-  defstruct [:id, :owner, stage: "wait", players: [], settings: %Settings{}, round: 1]
+  defstruct [
+    :id,
+    :owner,
+    stage: "wait",
+    players: [],
+    settings: %Settings{},
+    current_round: 1,
+    rounds: []
+  ]
 
   require Machinery
 
   @dialyzer {:no_return, [transition_to: 2, next_stage: 1]}
+
+  @spec current_round(Game.t()) :: Round.t()
+  def current_round(game) do
+    Enum.find(game.rounds, fn round -> round.number == game.current_round end)
+  end
 
   @spec transition_to(Game.t(), String.t()) :: {:ok, Game.t()} | {:error, String.t()}
   def transition_to(game, stage) do
