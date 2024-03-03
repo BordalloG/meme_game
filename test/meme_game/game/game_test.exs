@@ -17,7 +17,8 @@ defmodule MemeGame.GameTest do
     end
 
     test "should return the round struct for the current round even if its not the first round" do
-      game = build(:game, %{current_round: 2, rounds: [build(:round), build(:round, %{number: 2})]})
+      {round1, round2} = {build(:round), build(:round, %{number: 2})}
+      game = build(:game, %{current_round: 2, rounds: [round1, round2]})
 
       assert %Round{} = round = Game.current_round(game)
       assert round.number == game.current_round
@@ -31,6 +32,30 @@ defmodule MemeGame.GameTest do
       {:ok, updated_game} = Game.next_stage(game)
 
       assert updated_game.stage == "design"
+    end
+
+    test "wait -> design should create a new round" do
+      game = build(:game, %{stage: "wait"})
+
+      {:ok, updated_game} = Game.next_stage(game)
+
+      assert updated_game.stage == "design"
+      assert length(updated_game.rounds) == game.current_round
+      assert hd(updated_game.rounds).number == game.current_round
+    end
+
+    test "wait -> design should create a new round when there are already at least one round played" do
+      game = build(:game, %{stage: "wait", current_round: 2, rounds: [build(:round)]})
+
+      {:ok, updated_game} = Game.next_stage(game)
+
+      assert updated_game.stage == "design"
+
+      assert length(game.rounds) == game.current_round - 1
+      assert length(updated_game.rounds) == game.current_round
+
+      assert hd(game.rounds).number == game.current_round - 1
+      assert hd(updated_game.rounds).number == game.current_round
     end
 
     test "wait -> error when there aren't enought players" do

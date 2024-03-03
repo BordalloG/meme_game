@@ -44,7 +44,7 @@ defmodule MemeGame.Game do
 
   @dialyzer {:no_return, [transition_to: 2, next_stage: 1]}
 
-  @spec current_round(Game.t()) :: Round.t()
+  @spec current_round(Game.t()) :: Round.t() | nil
   def current_round(game) do
     Enum.find(game.rounds, fn round -> round.number == game.current_round end)
   end
@@ -59,8 +59,12 @@ defmodule MemeGame.Game do
   @spec next_stage(Game.t()) :: {:ok, Game.t()} | {:error, String.t()}
   def next_stage(%Game{stage: "wait"} = game) do
     case can_start_game?(game) do
-      {:ok, game} -> transition_to(game, "design")
-      {:error, reason} -> {:error, reason}
+      {:ok, game} ->
+        create_new_round(game)
+        |> transition_to("design")
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -136,5 +140,10 @@ defmodule MemeGame.Game do
     else
       {:ok, game}
     end
+  end
+
+  @spec create_new_round(Game.t()) :: Game.t()
+  def create_new_round(game) do
+    %{game | rounds: [%Round{number: game.current_round} | game.rounds]}
   end
 end
