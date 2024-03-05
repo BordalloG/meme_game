@@ -27,26 +27,26 @@ defmodule MemeGame.GameServer do
   end
 
   @spec handle_call(:state, {pid, term()}, Game.t()) :: {:reply, Game.t(), Game.t()}
-  def handle_call(:state, _from, game) do
+  def handle_call(:state, _from, %Game{} = game) do
     {:reply, game, game}
   end
 
   @spec handle_cast({:join, Player.t()}, Game.t()) :: {:noreply, Game.t()}
-  def handle_cast({:join, player}, game) do
+  def handle_cast({:join, player}, %Game{} = game) do
     game = %{game | players: [player | game.players]}
 
     {:noreply, broadcast_game_update(game)}
   end
 
   @spec handle_cast({:leave, Player.t()}, Game.t()) :: {:noreply, Game.t()}
-  def handle_cast({:leave, player}, game) do
+  def handle_cast({:leave, player}, %Game{} = game) do
     game = %{game | players: Enum.filter(game.players, fn p -> p != player end)}
 
     {:noreply, broadcast_game_update(game)}
   end
 
   @spec handle_cast(:next_stage, Game.t()) :: {:noreply, Game.t()}
-  def handle_cast(:next_stage, game) do
+  def handle_cast(:next_stage, %Game{} = game) do
     game =
       case Game.next_stage(game) do
         {:ok, game} ->
@@ -91,7 +91,7 @@ defmodule MemeGame.GameServer do
     end
   end
 
-  def handle_cast({:submit_meme, _meme}, game) do
+  def handle_cast({:submit_meme, _meme}, %Game{} = game) do
     {:noreply,
      broadcast_game_error(
        game,
@@ -100,13 +100,13 @@ defmodule MemeGame.GameServer do
   end
 
   @spec broadcast_game_update(Game.t()) :: Game.t()
-  def broadcast_game_update(game) do
+  def broadcast_game_update(%Game{} = game) do
     MemeGame.PubSub.broadcast_game("update", game)
     game
   end
 
   @spec broadcast_game_error(Game.t(), String.t()) :: Game.t()
-  def broadcast_game_error(game, error) do
+  def broadcast_game_error(%Game{} = game, error) do
     MemeGame.PubSub.broadcast_error(game, error)
     game
   end

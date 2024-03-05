@@ -45,12 +45,12 @@ defmodule MemeGame.Game do
   @dialyzer {:no_return, [transition_to: 2, next_stage: 1]}
 
   @spec current_round(Game.t()) :: Round.t() | nil
-  def current_round(game) do
+  def current_round(%Game{} = game) do
     Enum.find(game.rounds, fn round -> round.number == game.current_round end)
   end
 
   @spec transition_to(Game.t(), String.t()) :: {:ok, Game.t()} | {:error, String.t()}
-  def transition_to(game, stage) do
+  def transition_to(%Game{} = game, stage) do
     Logger.info("Game id #{game.id} transitioning from #{game.stage} to #{stage}")
 
     Machinery.transition_to(game, __MODULE__, stage)
@@ -90,7 +90,7 @@ defmodule MemeGame.Game do
   end
 
   @spec can_start_game?(Game.t()) :: {:ok, Game.t()} | {:error, String.t()}
-  defp can_start_game?(game) do
+  defp can_start_game?(%Game{} = game) do
     if length(game.players) >= 2 do
       {:ok, game}
     else
@@ -99,7 +99,7 @@ defmodule MemeGame.Game do
   end
 
   @spec can_join?(Game.t(), Player.t()) :: {:ok, Game.t()} | {:error, [String.t()]}
-  def can_join?(game, player) do
+  def can_join?(%Game{} = game, player) do
     validations = [
       game_full?(game),
       player_has_valid_nick?(player),
@@ -116,7 +116,7 @@ defmodule MemeGame.Game do
   end
 
   @spec game_full?(Game.t()) :: {:ok, Game.t()} | {:error, String.t()}
-  defp game_full?(game) do
+  defp game_full?(%Game{} = game) do
     if length(game.players) >= game.settings.max_players do
       {:error, dgettext("errors", "Game is already full")}
     else
@@ -134,7 +134,7 @@ defmodule MemeGame.Game do
   end
 
   @spec nick_available?(Game.t(), Player.t()) :: {:ok, Game.t()} | {:error, String.t()}
-  defp nick_available?(game, player) do
+  defp nick_available?(%Game{} = game, player) do
     if Enum.any?(game.players, fn p -> p.nick == player.nick end) do
       {:error, dgettext("errors", "This nick is already in use")}
     else
@@ -143,7 +143,7 @@ defmodule MemeGame.Game do
   end
 
   @spec create_new_round(Game.t()) :: Game.t()
-  def create_new_round(game) do
+  def create_new_round(%Game{} = game) do
     %{game | rounds: [%Round{number: game.current_round} | game.rounds]}
   end
 end

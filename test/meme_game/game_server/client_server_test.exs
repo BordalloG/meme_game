@@ -1,5 +1,4 @@
 defmodule MemeGame.ClientServerTest do
-
   use MemeGame.DataCase
   use ExUnit.Case, async: true
 

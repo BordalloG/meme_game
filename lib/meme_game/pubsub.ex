@@ -9,10 +9,10 @@ defmodule MemeGame.PubSub do
   def game_topic(game_id) when is_binary(game_id), do: "game:#{game_id}"
 
   @spec game_topic(Game.t()) :: String.t()
-  def game_topic(game), do: "game:#{game.id}"
+  def game_topic(%Game{} = game), do: "game:#{game.id}"
 
   @spec broadcast_game(String.t(), Game.t()) :: atom
-  def broadcast_game(event, game) do
+  def broadcast_game(event, %Game{} = game) do
     topic = "game:#{game.id}"
 
     Phoenix.PubSub.broadcast(MemeGame.PubSub, topic, %Phoenix.Socket.Broadcast{
@@ -23,7 +23,7 @@ defmodule MemeGame.PubSub do
   end
 
   @spec broadcast_error(Game.t(), String.t()) :: atom
-  def broadcast_error(game, error) do
+  def broadcast_error(%Game{} = game, error) do
     topic = "game:#{game.id}"
 
     Phoenix.PubSub.broadcast(MemeGame.PubSub, topic, %Phoenix.Socket.Broadcast{
