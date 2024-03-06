@@ -111,22 +111,32 @@ msgstr ""
 msgid "must be equal to %{number}"
 msgstr ""
 
-#: lib/meme_game/game/game.ex:72
+#: lib/meme_game/game/game.ex:97
 #, elixir-autogen, elixir-format
 msgid "At least two players are necessary to start the game."
 msgstr ""
 
-#: lib/meme_game/game/game.ex:105
+#: lib/meme_game/game/game.ex:130
 #, elixir-autogen, elixir-format
 msgid "Empty nicks are not allowed"
 msgstr ""
 
-#: lib/meme_game/game/game.ex:96
+#: lib/meme_game/game/game.ex:121
 #, elixir-autogen, elixir-format
 msgid "Game is already full"
 msgstr ""
 
-#: lib/meme_game/game/game.ex:114
+#: lib/meme_game/game/game.ex:139
 #, elixir-autogen, elixir-format
 msgid "This nick is already in use"
+msgstr ""
+
+#: lib/meme_game/game_server/server.ex:98
+#, elixir-autogen, elixir-format
+msgid "Memes can only be submitted during the design stage"
+msgstr ""
+
+#: lib/meme_game/game_server/server.ex:68
+#, elixir-autogen, elixir-format
+msgid "You can send only one meme per round"
 msgstr ""

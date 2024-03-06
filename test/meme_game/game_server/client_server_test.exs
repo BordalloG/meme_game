@@ -109,7 +109,7 @@ defmodule MemeGame.ClientServerTest do
 
       assert_receive %Phoenix.Socket.Broadcast{
         event: "error",
-        payload: "Memes can only be submitted during the design stage."
+        payload: "Memes can only be submitted during the design stage"
       }
     end
 
