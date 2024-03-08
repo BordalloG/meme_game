@@ -1,6 +1,8 @@
 defmodule MemeGameWeb.Game.InspectLive do
   alias MemeGame.Game
   alias MemeGame.GameServer
+  alias MemeGame.GameServer.Supervisor
+
   use MemeGameWeb, :live_view
 
   def handle_params(%{"game_id" => game_id}, _uri, socket) do
@@ -28,7 +30,39 @@ defmodule MemeGameWeb.Game.InspectLive do
 
   def handle_event("next_stage", _params, socket) do
     GameServer.Client.next_stage(socket.assigns.game_id)
-   {:noreply, socket}
+    {:noreply, socket}
+  end
+
+  def handle_event("create_game", _params, socket) do
+    game_id = socket.assigns.game_id
+
+    Supervisor.start_new_game_server(
+      game_id,
+      %MemeGame.Game.Player{id: "123", nick: "John"},
+      "en"
+    )
+
+    socket =
+      socket
+      |> assign_async(:game, fn -> fetch_game(game_id) end)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("stop_game", _params, socket) do
+    game_id = socket.assigns.game_id
+
+    socket =
+      case Supervisor.stop_game_server(game_id) do
+        :ok ->
+          socket
+          |> assign_async(:game, fn -> fetch_game(game_id) end, reset: true)
+
+        :error ->
+          socket
+      end
+
+    {:noreply, socket}
   end
 
   def fetch_game(game_id) do
@@ -43,9 +77,9 @@ defmodule MemeGameWeb.Game.InspectLive do
     <div class="flex flex-row w-full">
       <div class="basis-1/3">
         <.async_result :let={game} assign={@game}>
-          <:loading>Loading Game ... </:loading>
-          <:failed :let={failure}><%= inspect failure %></:failed>
-          <.game game={game}/>
+          <:loading>Loading Game ...</:loading>
+          <:failed :let={failure}><.failure failure={failure} /></:failed>
+          <.game game={game} />
         </.async_result>
       </div>
       <div class="basis-2/3 p-4 rounded bg-slate-200 h-96 max-h-96 overflow-scroll">
@@ -60,17 +94,44 @@ defmodule MemeGameWeb.Game.InspectLive do
       </div>
     </div>
     <div class="flex justify-around">
-      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" phx-click="next_stage"> Next Stage </button>
+      <button
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        phx-click="next_stage"
+      >
+        Next Stage
+      </button>
     </div>
+    """
+  end
+
+  def failure(%{failure: {:error, :game_not_found}} = assigns) do
+    ~H"""
+    Game not found.
+    <button
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      phx-click="create_game"
+    >
+      Create Game
+    </button>
+    """
+  end
+
+  def failure(assigns) do
+    ~H"""
+    Something went wrong: <%= inspect(@failure) %>
     """
   end
 
   def game(assigns) do
     ~H"""
-     id: <%= @game.id %> <br/>
-     owner: <%= @game.owner.nick %> <br/>
-     stage: <%= @game.stage %> <br>
-     players:<%= Enum.map(@game.players, fn p -> "[#{p.id}] #{p.nick}"  end) %>
+    id: <%= @game.id %> <br /> owner: <%= @game.owner.nick %> <br /> stage: <%= @game.stage %> <br />
+    players:<%= Enum.map(@game.players, fn p -> "[#{p.id}] #{p.nick}" end) %>
+    <button
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      phx-click="stop_game"
+    >
+      Stop Game
+    </button>
     """
   end
 end

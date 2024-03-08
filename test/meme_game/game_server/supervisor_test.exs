@@ -9,8 +9,12 @@ defmodule MemeGame.SupervisorTest do
   describe "start_new_game_server/3" do
     test "starts a new game server successfully" do
       owner = build(:player)
-      {:ok, pid} = Supervisor.start_new_game_server("room123", owner, "en")
+      {:ok, pid} = Supervisor.start_new_game_server("123", owner, "en")
       assert Process.alive?(pid)
+    end
+
+    test "should not start a new game server with a game id in use" do
+      assert false
     end
   end
 
@@ -21,6 +25,7 @@ defmodule MemeGame.SupervisorTest do
       assert Process.alive?(pid)
 
       :ok = Supervisor.stop_game_server(pid)
+      assert false
       refute Process.alive?(pid)
     end
   end

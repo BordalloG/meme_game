@@ -28,7 +28,15 @@ defmodule MemeGame.GameServer.Supervisor do
     {:ok, pid}
   end
 
-  def stop_game_server(pid) do
-    DynamicSupervisor.terminate_child(__MODULE__, pid)
+  def stop_game_server(game_id) do
+    case ServerName.get_game_pid(game_id) do
+      {:ok, pid} ->
+        :ok = DynamicSupervisor.terminate_child(__MODULE__, pid)
+        ServerName.remove_game_pid(game_id)
+        :ok
+
+      _ ->
+        :error
+    end
   end
 end
