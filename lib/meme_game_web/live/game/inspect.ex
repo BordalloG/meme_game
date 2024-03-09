@@ -74,15 +74,25 @@ defmodule MemeGameWeb.Game.InspectLive do
 
   def render(assigns) do
     ~H"""
-    <div class="flex flex-row w-full">
-      <div class="basis-1/3">
+    <div class="w-full">
+      <div class="w-full min-w-max flex justify-around bg-neutral-100 rounded py-3 drop-shadow-lg items-center mb-4">
         <.async_result :let={game} assign={@game}>
           <:loading>Loading Game ...</:loading>
-          <:failed :let={failure}><.failure failure={failure} /></:failed>
+          <:failed :let={failure}><.failure failure={failure} game_id={@game_id} /></:failed>
           <.game game={game} />
         </.async_result>
       </div>
-      <div class="basis-2/3 p-4 rounded bg-slate-200 h-96 max-h-96 overflow-scroll">
+
+      <div class="flex justify-around">
+        <button
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          phx-click="next_stage"
+        >
+          Next Stage
+        </button>
+     </div>
+
+      <div class="basis-1/2 p-4 rounded bg-slate-200 h-96 max-h-96 overflow-scroll">
         <p id="messages_count">[<%= length(@messages) %>] Messages:</p>
         <div
           :for={message <- @messages}
@@ -93,22 +103,14 @@ defmodule MemeGameWeb.Game.InspectLive do
         </div>
       </div>
     </div>
-    <div class="flex justify-around">
-      <button
-        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        phx-click="next_stage"
-      >
-        Next Stage
-      </button>
-    </div>
     """
   end
 
   def failure(%{failure: {:error, :game_not_found}} = assigns) do
     ~H"""
-    Game not found.
+    Game <%= @game_id  %> not found.
     <button
-      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+    class="border-2 border-teal-600 hover:bg-teal-600 text-teal-600 hover:text-white font-bold py-1 px-2 rounded"
       phx-click="create_game"
     >
       Create Game
@@ -124,14 +126,26 @@ defmodule MemeGameWeb.Game.InspectLive do
 
   def game(assigns) do
     ~H"""
-    id: <%= @game.id %> <br /> owner: <%= @game.owner.nick %> <br /> stage: <%= @game.stage %> <br />
-    players:<%= Enum.map(@game.players, fn p -> "[#{p.id}] #{p.nick}" end) %>
-    <button
-      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      phx-click="stop_game"
-    >
-      Stop Game
-    </button>
+      <.game_info title="Game:" value={@game.id}/>
+      <.game_info title="Round:" value={"[#{@game.current_round}/#{@game.settings.rounds}]"}/>
+      <.game_info title="Stage:" value={@game.stage}/>
+      <.game_info title="Players:" value={"[#{length(@game.players)}/#{@game.settings.max_players}]"}/>
+      <button
+        class="border-2 border-red-700 hover:bg-red-700 text-red-700 hover:text-white font-bold py-1 px-2 rounded"
+        phx-click="stop_game">
+        Kill Game
+      </button>
+    """
+  end
+
+  def game_info(assigns) do
+    ~H"""
+     <p class="font-bold text-center">
+        <%= @title %>
+        <span class="font-normal text-center block">
+          <%= @value %>
+        </span>
+      </p>
     """
   end
 end
