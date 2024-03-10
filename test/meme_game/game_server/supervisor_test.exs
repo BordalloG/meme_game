@@ -9,23 +9,33 @@ defmodule MemeGame.SupervisorTest do
   describe "start_new_game_server/3" do
     test "starts a new game server successfully" do
       owner = build(:player)
+
       {:ok, pid} = Supervisor.start_new_game_server("123", owner, "en")
+
       assert Process.alive?(pid)
     end
 
     test "should not start a new game server with a game id in use" do
-      assert false
+      owner = build(:player)
+      game_id = "1234"
+
+      {:ok, pid} = Supervisor.start_new_game_server(game_id, owner, "en")
+
+      assert Process.alive?(pid)
+      assert {:error, reason} = Supervisor.start_new_game_server(game_id, owner, "en")
+      assert reason == "Game already exists game_id: #{game_id}"
     end
   end
 
   describe "stop_game_server/1" do
     test "stops a game server successfully" do
       owner = build(:player)
-      {:ok, pid} = Supervisor.start_new_game_server("room456", owner, "en")
+      game_id = "game456"
+
+      {:ok, pid} = Supervisor.start_new_game_server(game_id, owner, "en")
       assert Process.alive?(pid)
 
-      :ok = Supervisor.stop_game_server(pid)
-      assert false
+      :ok = Supervisor.stop_game_server(game_id)
       refute Process.alive?(pid)
     end
   end

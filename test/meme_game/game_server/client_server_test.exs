@@ -12,12 +12,13 @@ defmodule MemeGame.ClientServerTest do
     {:ok, pid} = MemeGame.GameServer.Supervisor.start_new_game_server(game.id, game.owner)
 
     Phoenix.PubSub.subscribe(MemeGame.PubSub, MemeGame.PubSub.game_topic(game))
+    on_exit(fn -> MemeGame.GameServer.Supervisor.stop_game_server(game.id) end)
     {:ok, %{game: game, pid: pid}}
   end
 
   describe "init" do
     test "starting a game should add owner as a player" do
-      game = build(:game)
+      game = build(:game, %{id: "different_id"})
       {:ok, _pid} = MemeGame.GameServer.Supervisor.start_new_game_server(game.id, game.owner)
 
       game = Client.state(game.id)
@@ -109,7 +110,7 @@ defmodule MemeGame.ClientServerTest do
 
       assert_receive %Phoenix.Socket.Broadcast{
         event: "error",
-        payload: "Memes can only be submitted during the design stage"
+        payload: "Memes can only be submitted during the design stage."
       }
     end
 

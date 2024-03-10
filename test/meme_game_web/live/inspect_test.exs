@@ -13,11 +13,22 @@ defmodule MemeGameWeb.InspectTest do
     {:ok, %{conn: conn}}
   end
 
-  test "page should load and render game id", %{conn: conn} do
+  test "Page should render without a game, clicking in create game button should create a new game",
+       %{conn: conn} do
     game_id = "abc123"
     conn = get(conn, "/game/#{game_id}/inspect")
+    {:ok, view, _html} = live(conn)
 
-    assert html_response(conn, 200) =~ "Inspecting Game #{game_id}"
+    view
+    |> element("#create_game")
+    |> render_click()
+
+    refute view |> element("#create_game") |> has_element?()
+    assert view |> element("#kill_game") |> has_element?()
+    assert view |> element("#info_game", game_id) |> has_element?()
+    assert view |> element("#info_round", "1/4") |> has_element?()
+    assert view |> element("#info_stage", "wait") |> has_element?()
+    assert view |> element("#info_players", "1/4") |> has_element?()
   end
 
   test "should subscribe to game pubsub and render messages", %{conn: conn} do
