@@ -33,9 +33,13 @@ defmodule MemeGame.GameServer do
 
   @spec handle_cast({:join, Player.t()}, Game.t()) :: {:noreply, Game.t()}
   def handle_cast({:join, player}, %Game{} = game) do
-    game = %{game | players: [player | game.players]}
+    if length(game.players) >= game.settings.max_players do
+      {:noreply, broadcast_game_error(game, dgettext("errors", "Game is full"))}
+    else
+      game = %{game | players: [player | game.players]}
 
-    {:noreply, broadcast_game_update(game)}
+      {:noreply, broadcast_game_update(game)}
+    end
   end
 
   @spec handle_cast({:leave, Player.t()}, Game.t()) :: {:noreply, Game.t()}
