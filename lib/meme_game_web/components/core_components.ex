@@ -22,14 +22,15 @@ defmodule MemeGameWeb.CoreComponents do
 
   def crown(assigns) do
     ~H"""
-     <svg width="15" height="15" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M38 28H2L1 6L11 14.5L20 1L29 14.5L39 6L38 28Z" fill="#FFA928"/>
-        <path d="M2 38V30H38V38H2Z" fill="#FFA928"/>
-        <path d="M38 28H2L1 6L11 14.5L20 1L29 14.5L39 6L38 28Z" stroke="#FFA928" stroke-width="0.5"/>
-        <path d="M2 38V30H38V38H2Z" stroke="#FFA928" stroke-width="0.5"/>
-      </svg>
+    <svg width="15" height="15" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M38 28H2L1 6L11 14.5L20 1L29 14.5L39 6L38 28Z" fill="#FFA928" />
+      <path d="M2 38V30H38V38H2Z" fill="#FFA928" />
+      <path d="M38 28H2L1 6L11 14.5L20 1L29 14.5L39 6L38 28Z" stroke="#FFA928" stroke-width="0.5" />
+      <path d="M2 38V30H38V38H2Z" stroke="#FFA928" stroke-width="0.5" />
+    </svg>
     """
   end
+
   @doc """
   Renders a modal.
 

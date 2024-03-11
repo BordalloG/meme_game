@@ -1,6 +1,6 @@
 defmodule MemeGameWeb.Game.InspectLive do
-  alias MemeGame.Game.Player
   alias MemeGame.Game
+  alias MemeGame.Game.Player
   alias MemeGame.GameServer
   alias MemeGame.GameServer.Supervisor
 
@@ -27,9 +27,14 @@ defmodule MemeGameWeb.Game.InspectLive do
   def handle_info(%Phoenix.Socket.Broadcast{event: _event, payload: _payload} = message, socket) do
     socket =
       case message do
-        %Phoenix.Socket.Broadcast{event: "update", payload: game} -> assign_async(socket, :game, fn -> {:ok, %{game: game}} end)
-        %Phoenix.Socket.Broadcast{event: "error", payload: error} -> put_flash(socket, :error, error)
-        _ -> socket
+        %Phoenix.Socket.Broadcast{event: "update", payload: game} ->
+          assign_async(socket, :game, fn -> {:ok, %{game: game}} end)
+
+        %Phoenix.Socket.Broadcast{event: "error", payload: error} ->
+          put_flash(socket, :error, error)
+
+        _ ->
+          socket
       end
 
     socket = assign(socket, messages: [message | socket.assigns.messages])
@@ -49,7 +54,7 @@ defmodule MemeGameWeb.Game.InspectLive do
     {:noreply, socket}
   end
 
-  def handle_event("kick", %{"id" => id, "nick"=> nick}, socket) do
+  def handle_event("kick", %{"id" => id, "nick" => nick}, socket) do
     GameServer.Client.leave(socket.assigns.game_id, %Player{id: id, nick: nick})
     {:noreply, socket}
   end
@@ -101,7 +106,7 @@ defmodule MemeGameWeb.Game.InspectLive do
       <:failed :let={failure}>
         <.failure failure={failure} game_id={@game_id} />
       </:failed>
-      <.success game={game} messages={@messages}/>
+      <.success game={game} messages={@messages} />
     </.async_result>
     """
   end
@@ -111,11 +116,11 @@ defmodule MemeGameWeb.Game.InspectLive do
     <.game game={@game} />
     <div class="flex w-full justify-between">
       <div id="left" class="basis-4/12 w-full">
-        <.players players={@game.players} owner={@game.owner}/>
+        <.players players={@game.players} owner={@game.owner} />
       </div>
       <div id="right" class="basis-6/12">
         <.actions />
-        <.messages messages={@messages}/>
+        <.messages messages={@messages} />
       </div>
     </div>
     """
@@ -123,7 +128,7 @@ defmodule MemeGameWeb.Game.InspectLive do
 
   def failure(%{failure: {:error, :game_not_found}} = assigns) do
     ~H"""
-    <h1 class="text-red-700 font-bold text-3xl"> Game <%= @game_id %> does not exist. </h1>
+    <h1 class="text-red-700 font-bold text-3xl">Game <%= @game_id %> does not exist.</h1>
     <button
       id="create_game"
       class="text-neutal-800 hover:text-neutal-800 hover:underline"
@@ -143,13 +148,21 @@ defmodule MemeGameWeb.Game.InspectLive do
   def game(assigns) do
     ~H"""
     <div
-        id="game_info"
-        class="w-full min-w-max flex justify-around bg-neutral-100 rounded py-3 drop-shadow-lg items-center mb-4"
-      >
+      id="game_info"
+      class="w-full min-w-max flex justify-around bg-neutral-100 rounded py-3 drop-shadow-lg items-center mb-4"
+    >
       <.game_info id="game" title="Game" value={@game.id} />
-      <.game_info id="round" title="Round" value={"[#{@game.current_round}/#{@game.settings.rounds}]"} />
+      <.game_info
+        id="round"
+        title="Round"
+        value={"[#{@game.current_round}/#{@game.settings.rounds}]"}
+      />
       <.game_info id="stage" title="Stage" value={@game.stage} />
-      <.game_info id="players" title="Players" value={"[#{length(@game.players)}/#{@game.settings.max_players}]"} />
+      <.game_info
+        id="players"
+        title="Players"
+        value={"[#{length(@game.players)}/#{@game.settings.max_players}]"}
+      />
       <button
         id="kill_game"
         class="border-2 border-red-700 hover:bg-red-700 text-red-700 hover:text-white font-bold py-1 px-2 rounded"
@@ -164,21 +177,21 @@ defmodule MemeGameWeb.Game.InspectLive do
   def actions(assigns) do
     ~H"""
     <div
-        id="game_info"
-        class="w-full min-w-max flex justify-around bg-neutral-100 rounded py-3 drop-shadow-lg items-center mb-4"
+      id="game_info"
+      class="w-full min-w-max flex justify-around bg-neutral-100 rounded py-3 drop-shadow-lg items-center mb-4"
+    >
+      <button
+        class="border-2 border-neutral-600 hover:bg-neutral-600 text-neutral-600 hover:text-white font-bold py-1 px-2 rounded"
+        phx-click="next_stage"
       >
-        <button
+        Next Stage
+      </button>
+      <button
         class="border-2 border-neutral-600 hover:bg-neutral-600 text-neutral-600 hover:text-white font-bold py-1 px-2 rounded"
-          phx-click="next_stage"
-        >
-          Next Stage
-        </button>
-        <button
-        class="border-2 border-neutral-600 hover:bg-neutral-600 text-neutral-600 hover:text-white font-bold py-1 px-2 rounded"
-          phx-click="join"
-        >
-          Add Player
-        </button>
+        phx-click="join"
+      >
+        Add Player
+      </button>
     </div>
     """
   end
@@ -186,31 +199,35 @@ defmodule MemeGameWeb.Game.InspectLive do
   def messages(assigns) do
     ~H"""
     <div class="basis-1/2 p-4 rounded bg-slate-200 h-96 max-h-96 overflow-y-scroll">
-        <p id="messages_count">[<%= length(@messages) %>] Messages:</p>
-        <div
-          :for={message <- @messages}
-          class="border-dashed border-2 border-slate-500 rounded p-1 mb-2"
-        >
-          <p class={"p-1 rounded #{if message.event == "error" do "bg-red-200" else "bg-slate-300" end}"}>Event: <%= inspect(message.event) %></p>
-          <p class="p-1 mt-2 bg-slate-100 rounded"><%= inspect(message.payload, pretty: true) %></p>
-        </div>
+      <p id="messages_count">[<%= length(@messages) %>] Messages:</p>
+      <div
+        :for={message <- @messages}
+        class="border-dashed border-2 border-slate-500 rounded p-1 mb-2"
+      >
+        <p class={"p-1 rounded #{if message.event == "error" do "bg-red-200" else "bg-slate-300" end}"}>
+          Event: <%= inspect(message.event) %>
+        </p>
+        <p class="p-1 mt-2 bg-slate-100 rounded"><%= inspect(message.payload, pretty: true) %></p>
       </div>
+    </div>
     """
   end
 
   def players(assigns) do
     ~H"""
     <div class="w-full flex flex-col justify-around bg-neutral-100 rounded p-3 drop-shadow-lg items-center mb-4">
-      <h1> <b> Players </b> </h1>
+      <h1><b> Players </b></h1>
       <ul class="w-full">
-        <li class="flex" :for={p <- @players}>
-        <span class="flex basis-1/12 justify-center items-center"> <.crown :if={p == @owner}/> </span>
-        <span class="flex justify-start  basis-11/12">
-            [<%= p.id  %>] <%= p.nick %>
-        </span>
-        <button class="hover:underline" phx-click="kick" phx-value-id={p.id} phx-value-nick={p.nick}>
-          kick
-        </button>
+        <li :for={p <- @players} class="flex">
+          <span class="flex basis-1/12 justify-center items-center">
+            <.crown :if={p == @owner} />
+          </span>
+          <span class="flex justify-start  basis-11/12">
+            [<%= p.id %>] <%= p.nick %>
+          </span>
+          <button class="hover:underline" phx-click="kick" phx-value-id={p.id} phx-value-nick={p.nick}>
+            kick
+          </button>
         </li>
       </ul>
     </div>

@@ -47,12 +47,12 @@ defmodule MemeGame.ClientServerTest do
     end
 
     test "should not add a player when room is full", %{game: game} do
-      Enum.each(1..game.settings.max_players - 1, fn i ->
+      Enum.each(1..(game.settings.max_players - 1), fn i ->
         player = build(:player, %{id: "#{i}", nick: "Player#{i}"})
         Client.join(game.id, player)
         assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: payload}
-
       end)
+
       player = build(:player, %{id: "007", nick: "James"})
       Client.join(game.id, player)
       assert_receive %Phoenix.Socket.Broadcast{event: "error", payload: "Game is full"}
