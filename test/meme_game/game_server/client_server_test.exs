@@ -50,7 +50,7 @@ defmodule MemeGame.ClientServerTest do
       Enum.each(1..(game.settings.max_players - 1), fn i ->
         player = build(:player, %{id: "#{i}", nick: "Player#{i}"})
         Client.join(game.id, player)
-        assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: payload}
+        assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _payload}
       end)
 
       player = build(:player, %{id: "007", nick: "James"})
@@ -61,12 +61,30 @@ defmodule MemeGame.ClientServerTest do
 
   describe "leave/2" do
     test "should remove a player from the players list", %{game: game} do
-      player = build(:player)
+      player = build(:player, %{id: "abcd", nick: "Philip"})
 
       Client.leave(game.id, player)
 
       assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: payload}
       refute Enum.any?(payload.players, fn p -> p == player end)
+    end
+
+    test "should nominate a new owner when the current owner leaves", %{game: game} do
+      player = build(:player, %{id: "abcd", nick: "Philip"})
+      Client.join(game.id, player)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _payload}
+
+      Client.leave(game.id, game.owner)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: payload}
+
+      refute Enum.any?(payload.players, fn p -> p == game.owner end)
+      assert payload.owner == player
+    end
+
+    test "should end game with there is no players left", %{game: game} do
+      Client.leave(game.id, game.owner)
+      assert_receive %Phoenix.Socket.Broadcast{event: "end", payload: message}
+      assert message == "no players left"
     end
   end
 

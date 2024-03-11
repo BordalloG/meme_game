@@ -11,6 +11,7 @@ defmodule MemeGame.GameServer do
 
   alias MemeGame.Game
   alias MemeGame.Game.{Meme, Player}
+  alias MemeGame.GameServer.ServerName
 
   @spec init(map()) :: {atom, Game.t()}
   def init(%{game_id: game_id, owner: owner, locale: locale}) do
@@ -46,7 +47,19 @@ defmodule MemeGame.GameServer do
   def handle_cast({:leave, player}, %Game{} = game) do
     game = %{game | players: Enum.filter(game.players, fn p -> p != player end)}
 
-    {:noreply, broadcast_game_update(game)}
+    if Enum.empty?(game.players) do
+      broadcast_game_end(game, "no players left")
+      {:stop, {:shutdown, :no_players_left}, game}
+    else
+      game =
+        if player == game.owner do
+          %{game | owner: Enum.random(game.players)}
+        else
+          game
+        end
+
+      {:noreply, broadcast_game_update(game)}
+    end
   end
 
   @spec handle_cast(:next_stage, Game.t()) :: {:noreply, Game.t()}
@@ -101,6 +114,17 @@ defmodule MemeGame.GameServer do
        game,
        dgettext("errors", "Memes can only be submitted during the design stage.")
      )}
+  end
+
+  def terminate(reason, game) do
+    Logger.info("Game with id #{game.id} exit with reason #{inspect(reason)}")
+    ServerName.remove_game_pid(game.id)
+  end
+
+  @spec broadcast_game_end(Game.t(), String.t()) :: :ok
+  def broadcast_game_end(game, message) do
+    MemeGame.PubSub.broadcast_end(game, message)
+    :ok
   end
 
   @spec broadcast_game_update(Game.t()) :: Game.t()

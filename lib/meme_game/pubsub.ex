@@ -32,4 +32,15 @@ defmodule MemeGame.PubSub do
       payload: error
     })
   end
+
+  @spec broadcast_end(Game.t(), String.t()) :: atom
+  def broadcast_end(game, message) do
+    topic = "game:#{game.id}"
+
+    Phoenix.PubSub.broadcast(MemeGame.PubSub, topic, %Phoenix.Socket.Broadcast{
+      topic: game_topic(game),
+      event: "end",
+      payload: message
+    })
+  end
 end

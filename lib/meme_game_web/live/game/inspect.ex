@@ -33,6 +33,11 @@ defmodule MemeGameWeb.Game.InspectLive do
         %Phoenix.Socket.Broadcast{event: "error", payload: error} ->
           put_flash(socket, :error, error)
 
+        %Phoenix.Socket.Broadcast{event: "end", payload: message} ->
+          put_flash(socket, :info, message)
+          |> assign_async(:game, fn -> fetch_game(socket.assigns.game_id) end, reset: true)
+          |> push_patch(to: ~p"/game/#{socket.assigns.game_id}/inspect")
+
         _ ->
           socket
       end
