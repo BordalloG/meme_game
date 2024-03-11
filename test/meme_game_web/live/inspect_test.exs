@@ -37,7 +37,12 @@ defmodule MemeGameWeb.InspectTest do
     number_of_messages = 3
 
     {:ok, view, _html} = live(conn)
-    for i <- 1..number_of_messages, do: MemeGame.PubSub.broadcast_game(i, game)
+
+    view
+    |> element("#create_game")
+    |> render_click()
+
+    for i <- 1..number_of_messages, do: MemeGame.PubSub.broadcast_game("message #{i}", game)
 
     assert view
            |> element("#messages_count", "[#{number_of_messages}] Messages:")
