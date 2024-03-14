@@ -5,11 +5,12 @@ defmodule MemeGame.Factory do
 
   use ExMachina.Ecto, repo: MemeGame.Repo
 
-  use MemeGame.PlayerFactory
-  use MemeGame.GameFactory
-  use MemeGame.SettingsFactory
-  use MemeGame.RoundFactory
-  use MemeGame.MemeFactory
-  use MemeGame.FieldFactory
   use MemeGame.CoordinateFactory
+  use MemeGame.FieldFactory
+  use MemeGame.GameFactory
+  use MemeGame.PlayerFactory
+  use MemeGame.MemeFactory
+  use MemeGame.RoundFactory
+  use MemeGame.SettingsFactory
+  use MemeGame.VoteFactory
 end

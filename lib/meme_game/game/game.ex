@@ -146,4 +146,19 @@ defmodule MemeGame.Game do
   def create_new_round(%Game{} = game) do
     %{game | rounds: [%Round{number: game.current_round} | game.rounds]}
   end
+
+  @spec update_current_round(Game.t(), Round.t()) :: Game.t()
+  def update_current_round(game, updated_current_round) do
+    %{
+      game
+      | rounds:
+          Enum.map(game.rounds, fn round ->
+            if round.number == updated_current_round.number do
+              updated_current_round
+            else
+              round
+            end
+          end)
+    }
+  end
 end

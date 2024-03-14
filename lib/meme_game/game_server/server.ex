@@ -11,6 +11,7 @@ defmodule MemeGame.GameServer do
 
   alias MemeGame.Game
   alias MemeGame.Game.{Meme, Player}
+  alias MemeGame.Game.Meme.Vote
   alias MemeGame.GameServer.ServerName
 
   @spec init(map()) :: {atom, Game.t()}
@@ -86,18 +87,7 @@ defmodule MemeGame.GameServer do
     else
       current_round = %{current_round | memes: current_round.memes ++ [meme]}
 
-      # adding updated round to struct
-      game = %{
-        game
-        | rounds:
-            Enum.map(game.rounds, fn round ->
-              if round.number == game.current_round do
-                current_round
-              else
-                round
-              end
-            end)
-      }
+      game = Game.update_current_round(game, current_round)
 
       if length(current_round.memes) == length(game.players) do
         {:ok, game} = Game.next_stage(game)
@@ -113,6 +103,45 @@ defmodule MemeGame.GameServer do
      broadcast_game_error(
        game,
        dgettext("errors", "Memes can only be submitted during the design stage.")
+     )}
+  end
+
+  def handle_cast({:vote, player, %{owner: player} = _meme, _value}, game) do
+    {:noreply,
+     broadcast_game_error(
+       game,
+       dgettext("errors", "You cannot vote your own meme")
+     )}
+  end
+
+  def handle_cast({:vote, player, meme, value}, %Game{stage: "vote"} = game) do
+    vote = %Vote{player: player, value: value}
+    current_round = Game.current_round(game)
+
+    meme = Enum.find(current_round.memes, fn m -> m.id == meme.id end)
+    updated_meme = %{meme | votes: [vote | meme.votes]}
+
+    current_round = %{
+      current_round
+      | memes:
+          Enum.map(current_round.memes, fn m ->
+            if m == meme do
+              updated_meme
+            else
+              m
+            end
+          end)
+    }
+
+    game = Game.update_current_round(game, current_round)
+    {:noreply, game}
+  end
+
+  def handle_cast({:vote, _, _, _}, game) do
+    {:noreply,
+     broadcast_game_error(
+       game,
+       dgettext("errors", "Votes are only allowed during the vote stage")
      )}
   end
 

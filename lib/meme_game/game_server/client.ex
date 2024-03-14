@@ -5,6 +5,7 @@ defmodule MemeGame.GameServer.Client do
 
   alias MemeGame.Game
   alias MemeGame.Game.{Meme, Player}
+  alias MemeGame.Game.Meme.Vote
   alias MemeGame.GameServer.ServerName
 
   @type game_id :: String.t()
@@ -32,6 +33,11 @@ defmodule MemeGame.GameServer.Client do
   @spec submit_meme(game_id, Meme.t()) :: :ok
   def submit_meme(game_id, %Meme{} = meme) do
     cast(game_id, {:submit_meme, meme})
+  end
+
+  @spec vote(game_id(), Player.t(), Meme.t(), Vote.value()) :: :ok
+  def vote(game_id, player, meme, value) do
+    cast(game_id, {:vote, player, meme, value})
   end
 
   @spec cast(game_id, any()) :: :ok | {:error, :game_not_found}

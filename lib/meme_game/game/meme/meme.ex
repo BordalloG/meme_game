@@ -6,10 +6,12 @@ defmodule MemeGame.Game.Meme do
   alias MemeGame.Game.Player
 
   @type t :: %__MODULE__{
+          id: String.t(),
           img_url: String.t(),
           fields: [Field.t()],
-          owner: Player.t()
+          owner: Player.t(),
+          votes: [Vote.t()]
         }
 
-  defstruct [:img_url, :fields, :owner]
+  defstruct [:id, :img_url, :fields, :owner, :votes]
 end

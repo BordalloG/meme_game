@@ -192,6 +192,100 @@ defmodule MemeGame.ClientServerTest do
     end
   end
 
+  describe "vote_meme" do
+    test "should add a vote to a meme", %{game: game} do
+      owner = game.owner
+      player = build(:player, %{id: "ABC", nick: "Phil"})
+      player2 = build(:player, %{id: "abc", nick: "Loren"})
+
+      Client.join(game.id, player)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _join}
+      Client.join(game.id, player2)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _join}
+
+      Client.next_stage(game.id)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: game}
+      assert game.stage == "design"
+
+      owner_meme = build(:meme, %{owner: owner})
+      player_meme = build(:meme, %{owner: player})
+      player2_meme = build(:meme, %{owner: player2})
+
+      # each player send a meme
+      Client.submit_meme(game.id, owner_meme)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _game}
+
+      Client.submit_meme(game.id, player_meme)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _game}
+
+      Client.submit_meme(game.id, player2_meme)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: game}
+      # it should go to next stage by itself
+      assert game.stage == "vote"
+
+      # voting owner meme
+      Client.vote(game.id, player, owner_meme, :up)
+      Client.vote(game.id, player2, owner_meme, :mid)
+
+      # #voting player meme
+      Client.vote(game.id, owner, player_meme, :up)
+      Client.vote(game.id, player2, player_meme, :mid)
+
+      # #voting player 2 meme
+      Client.vote(game.id, player, player2_meme, :up)
+      Client.vote(game.id, owner, player2_meme, :mid)
+
+      Client.next_stage(game.id)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: game}
+      assert game.stage == "round_summary"
+
+      current_round = Game.current_round(game)
+      memes = current_round.memes
+
+      Enum.each(memes, fn m -> assert length(m.votes) == 2 end)
+    end
+
+    test "should not allow player vote on own meme", %{game: game} do
+      owner = game.owner
+      player = build(:player, %{id: "ABC", nick: "Phil"})
+
+      Client.join(game.id, player)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _join}
+
+      Client.next_stage(game.id)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: game}
+      assert game.stage == "design"
+
+      owner_meme = build(:meme, %{owner: owner})
+      player_meme = build(:meme, %{owner: player})
+
+      Client.submit_meme(game.id, owner_meme)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _game}
+
+      Client.submit_meme(game.id, player_meme)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _game}
+
+      Client.vote(game.id, owner, owner_meme, :up)
+
+      assert_receive %Phoenix.Socket.Broadcast{
+        event: "error",
+        payload: "You cannot vote your own meme"
+      }
+    end
+
+    test "should only allow votes to meme in vote stage and in the correct round", %{game: game} do
+      player = build(:player, %{id: "abcd", nick: "Phil"})
+      owner_meme = build(:meme, %{owner: game.owner})
+
+      Client.vote(game.id, player, owner_meme, :up)
+
+      assert_receive %Phoenix.Socket.Broadcast{
+        event: "error",
+        payload: "Votes are only allowed during the vote stage"
+      }
+    end
+  end
+
   describe "broadcast_game_update/1" do
     test "should broadcast the game as payload and 'update' as event to the pubsub", %{game: game} do
       Phoenix.PubSub.subscribe(MemeGame.PubSub, MemeGame.PubSub.game_topic(game))

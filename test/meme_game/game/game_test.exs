@@ -156,4 +156,21 @@ defmodule MemeGame.GameTest do
                MemeGame.Game.can_join?(game, new_player)
     end
   end
+
+  describe "update_current_round/2" do
+    test "should update round" do
+      game =
+        build(:game, %{current_round: 2, rounds: [build(:round)] ++ [build(:round, %{number: 2})]})
+
+      meme = build(:meme)
+
+      current_round = Game.current_round(game)
+      current_round = %{current_round | memes: [meme]}
+
+      updated_game = Game.update_current_round(game, current_round)
+
+      assert Enum.any?(Game.current_round(updated_game).memes, fn m -> m == meme end)
+      refute game == updated_game
+    end
+  end
 end
