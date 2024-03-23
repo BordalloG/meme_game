@@ -7,5 +7,5 @@ defmodule MemeGame.Game.Settings do
           rounds: integer()
         }
 
-  defstruct max_players: 4, rounds: 4
+  defstruct max_players: 4, rounds: 4, score: %{upvote: 10, downvote: -10, midvote: 0}
 end

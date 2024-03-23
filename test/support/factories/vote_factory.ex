@@ -7,7 +7,7 @@ defmodule MemeGame.VoteFactory do
       def vote_factory do
         %MemeGame.Game.Meme.Vote{
           player: build(:player),
-          value: Enum.take_random([:up, :down, :mid], 1) |> hd
+          value: Enum.take_random([:upvote, :downvote, :midvote], 1) |> hd
         }
       end
     end

@@ -6,8 +6,9 @@ defmodule MemeGame.PlayerFactory do
     quote do
       def player_factory do
         %MemeGame.Game.Player{
-          id: "123ABC",
-          nick: "Joseph"
+          id: Faker.UUID.v4(),
+          nick: "Joseph",
+          score: 0
         }
       end
     end

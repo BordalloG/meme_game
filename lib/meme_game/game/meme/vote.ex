@@ -4,7 +4,7 @@ defmodule MemeGame.Game.Meme.Vote do
   """
   alias MemeGame.Game.Player
 
-  @type value :: :up | :down | :mid
+  @type value :: :upvote | :downvote | :midvote
 
   @type t :: %__MODULE__{
           player: Player.t(),

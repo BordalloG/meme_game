@@ -173,4 +173,57 @@ defmodule MemeGame.GameTest do
       refute game == updated_game
     end
   end
+
+  describe "calculate_meme_score/2" do
+    test "should calculate meme score when result is positive" do
+      {v1, v2, v3} =
+        {
+          # + 10
+          build(:vote, %{value: :upvote}),
+          # + 10
+          build(:vote, %{value: :upvote}),
+          # + 0
+          build(:vote, %{value: :midvote})
+        }
+
+      meme = build(:meme, votes: [v1, v2, v3])
+      game = build(:game)
+
+      assert 20 = Game.calculate_meme_score(game, meme)
+    end
+
+    test "should calculate meme score when result is negative" do
+      {v1, v2, v3} =
+        {
+          # - 10
+          build(:vote, %{value: :downvote}),
+          # - 10
+          build(:vote, %{value: :downvote}),
+          # - 10
+          build(:vote, %{value: :downvote})
+        }
+
+      meme = build(:meme, votes: [v1, v2, v3])
+      game = build(:game)
+
+      assert -30 = Game.calculate_meme_score(game, meme)
+    end
+  end
+
+  describe "calculate_round_score/2" do
+    test "should calculate every meme score, and add it to meme and sum up to owner total score" do
+      game = build(:ongoing_game)
+
+      updated_game = Game.calculate_and_update_current_round_score(game)
+
+      assert game.players != updated_game.players
+
+      Enum.each(
+        Game.current_round(updated_game).memes,
+        fn
+          m -> assert m.score == Game.calculate_meme_score(updated_game, m)
+        end
+      )
+    end
+  end
 end

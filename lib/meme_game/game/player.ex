@@ -5,8 +5,9 @@ defmodule MemeGame.Game.Player do
 
   @type t :: %__MODULE__{
           id: String.t(),
-          nick: String.t()
+          nick: String.t(),
+          score: integer()
         }
 
-  defstruct [:id, :nick]
+  defstruct [:id, :nick, score: 0]
 end

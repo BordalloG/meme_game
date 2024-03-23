@@ -7,7 +7,7 @@ defmodule MemeGame.Game do
   require Logger
 
   alias MemeGame.Game
-  alias MemeGame.Game.{Player, Round, Settings}
+  alias MemeGame.Game.{Meme, Player, Round, Settings}
 
   use Machinery,
     field: :stage,
@@ -77,7 +77,8 @@ defmodule MemeGame.Game do
   end
 
   def next_stage(%Game{stage: "round_summary"} = game) do
-    transition_to(game, "scoreboard")
+    Game.calculate_and_update_current_round_score(game)
+    |> transition_to("scoreboard")
   end
 
   def next_stage(%Game{stage: "scoreboard"} = game) do
@@ -140,6 +141,43 @@ defmodule MemeGame.Game do
     else
       {:ok, game}
     end
+  end
+
+  @spec calculate_meme_score(Game.t(), Meme.t()) :: integer()
+  def calculate_meme_score(game, meme) do
+    Enum.reduce(meme.votes, 0, fn vote, acc ->
+      value =
+        case vote.value do
+          :upvote -> game.settings.score.upvote
+          :downvote -> game.settings.score.downvote
+          :midvote -> game.settings.score.midvote
+        end
+
+      acc + value
+    end)
+  end
+
+  def calculate_and_update_current_round_score(%Game{} = game) do
+    round = Game.current_round(game)
+
+    scored_memes =
+      Enum.map(round.memes, fn meme ->
+        score = calculate_meme_score(game, meme)
+        Meme.update_score(meme, score)
+      end)
+
+    players =
+      Enum.reduce(scored_memes, game.players, fn meme, players ->
+        owner = meme.owner
+
+        Enum.map(players, fn
+          ^owner -> %{owner | score: owner.score + meme.score}
+          player -> player
+        end)
+      end)
+
+    %{game | players: players}
+    |> Game.update_current_round(%{round | memes: scored_memes})
   end
 
   @spec create_new_round(Game.t()) :: Game.t()
