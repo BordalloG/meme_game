@@ -11,43 +11,58 @@ msgstr ""
 "Language: pt_BR\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
-#: lib/meme_game_web/components/core_components.ex:484
+#: lib/meme_game_web/components/core_components.ex:495
 #, elixir-autogen, elixir-format
 msgid "Actions"
 msgstr ""
 
-#: lib/meme_game_web/components/core_components.ex:161
+#: lib/meme_game_web/components/core_components.ex:172
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
-msgstr ""
+msgstr "Tentando reconectar"
 
-#: lib/meme_game_web/components/core_components.ex:152
+#: lib/meme_game_web/components/core_components.ex:163
 #, elixir-autogen, elixir-format
 msgid "Error!"
-msgstr ""
+msgstr "Erro!"
 
-#: lib/meme_game_web/components/core_components.ex:173
+#: lib/meme_game_web/components/core_components.ex:184
 #, elixir-autogen, elixir-format
 msgid "Hang in there while we get back on track"
-msgstr ""
+msgstr "Espere enquanto arrumamos"
 
-#: lib/meme_game_web/components/core_components.ex:168
+#: lib/meme_game_web/components/core_components.ex:179
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
-msgstr ""
+msgstr "Algo deu errado"
 
-#: lib/meme_game_web/components/core_components.ex:151
+#: lib/meme_game_web/components/core_components.ex:162
 #, elixir-autogen, elixir-format
 msgid "Success!"
-msgstr ""
+msgstr "Sucesso!"
 
-#: lib/meme_game_web/components/core_components.ex:156
+#: lib/meme_game_web/components/core_components.ex:167
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
-msgstr ""
+msgstr "Falha em conectar-se a internet"
 
-#: lib/meme_game_web/components/core_components.ex:77
-#: lib/meme_game_web/components/core_components.ex:131
+#: lib/meme_game_web/components/core_components.ex:88
+#: lib/meme_game_web/components/core_components.ex:142
 #, elixir-autogen, elixir-format
 msgid "close"
-msgstr ""
+msgstr "fechar"
+
+#: lib/meme_game_web/live/home/home.ex:31
+#, elixir-autogen, elixir-format
+msgid "Existing Game"
+msgstr "Jogo Existente"
+
+#: lib/meme_game_web/live/home/home.ex:37
+#, elixir-autogen, elixir-format
+msgid "New Game"
+msgstr "Novo Jogo"
+
+#: lib/meme_game_web/live/home/home.ex:34
+#, elixir-autogen, elixir-format
+msgid "or"
+msgstr "ou"

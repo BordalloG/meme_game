@@ -62,7 +62,8 @@ defmodule MemeGame.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_machina, "~> 2.7.0", only: :test},
       {:machinery, "~> 1.1.0"},
-      {:faker, "~> 0.18", only: :test}
+      {:faker, "~> 0.18", only: :test},
+      {:elixir_uuid, "~> 1.2"}
     ]
   end
 

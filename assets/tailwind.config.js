@@ -13,8 +13,59 @@ module.exports = {
   ],
   theme: {
     extend: {
+      backgroundImage:{
+        top_wave: "url('/images/top_wave.svg')",
+        bottom_wave: "url('/images/bottom_wave.svg')"
+      },
       colors: {
-        brand: "#FD4F00",
+        accent: {
+          50: "#ffc0da",
+          100: "#ffb3d2",
+          200: "#ffa6cb",
+          300: "#ff9ac3",
+          400: "#ff8dbc",
+          500: "#FF81B5",
+          600: "#e574a2",
+          700: "#cc6790",
+          800: "#b25a7e",
+          900: "#994d6c",
+        },
+        primary: {
+          50: "#bef3ea",
+          100: "#b1f0e6",
+          200: "#a4eee2",
+          300: "#97ebde",
+          400: "#8ae9da",
+          500: "#7EE7D6",
+          600: "#71cfc0",
+          700: "#64b8ab",
+          800: "#58a195",
+          900: "#4b8a80"
+        },
+        secondary: {
+          50: "#ffd8c1",
+          100: "#ffd0b4",
+          200: "#ffc8a8",
+          300: "#ffc09b",
+          400: "#ffb88f",
+          500: "#ffb183",
+          600: "#e59f75",
+          700: "#cc8d68",
+          800: "#b27b5b",
+          900: "#996a4e"
+        },
+        normal: {
+          50: "#a1a2a9",
+          100: "#8e8f98",
+          200: "#7c7c87",
+          300: "#696a76",
+          400: "#565765",
+          500: "#444554",
+          600: "#3d3e4b",
+          700: "#363743",
+          800: "#2f303a",
+          900: "#282932"
+        }
       }
     },
   },

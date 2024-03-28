@@ -5,9 +5,16 @@ defmodule MemeGameWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
-    plug :put_root_layout, html: {MemeGameWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+  end
+
+  pipeline :template do
+    plug :put_root_layout, html: {MemeGameWeb.Layouts, :root}
+  end
+
+  pipeline :game do
+    plug MemeGameWeb.Accounts.SetPlayer
   end
 
   pipeline :api do
@@ -15,11 +22,20 @@ defmodule MemeGameWeb.Router do
   end
 
   scope "/", MemeGameWeb do
-    pipe_through :browser
+    pipe_through [:browser, :template]
 
     get "/", PageController, :home
+    post "/", PageController, :start_session
 
     live "/game/:game_id/inspect", Game.InspectLive
+  end
+
+  scope "/game", MemeGameWeb do
+    pipe_through [:browser, :template, :game]
+
+    live_session :game_session do
+      live "/", GameLive
+    end
   end
 
   # Other scopes may use custom stacks.
