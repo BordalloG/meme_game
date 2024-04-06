@@ -116,6 +116,11 @@ defmodule MemeGame.Game do
     end
   end
 
+  @spec player_in_game?(Player.t(), Game.t()) :: boolean()
+  def player_in_game?(player, game) do
+    Enum.any?(game.players, fn p -> p == player end)
+  end
+
   @spec game_full?(Game.t()) :: {:ok, Game.t()} | {:error, String.t()}
   defp game_full?(%Game{} = game) do
     if length(game.players) >= game.settings.max_players do

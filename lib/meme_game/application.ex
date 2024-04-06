@@ -12,6 +12,7 @@ defmodule MemeGame.Application do
       MemeGame.Repo,
       {DNSCluster, query: Application.get_env(:meme_game, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: MemeGame.PubSub},
+      MemeGameWeb.Presence,
       # Start the Finch HTTP client for sending emails
       {Finch, name: MemeGame.Finch},
       # Start a worker by calling: MemeGame.Worker.start_link(arg)

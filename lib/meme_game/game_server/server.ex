@@ -18,6 +18,8 @@ defmodule MemeGame.GameServer do
   def init(%{game_id: game_id, owner: owner, locale: locale}) do
     Gettext.put_locale(locale)
 
+    Phoenix.PubSub.subscribe(MemeGame.PubSub, MemeGameWeb.Presence.game_topic(game_id))
+
     game = %Game{id: game_id, owner: owner, players: [owner]}
 
     {:ok, game}
@@ -28,39 +30,39 @@ defmodule MemeGame.GameServer do
     GenServer.start_link(__MODULE__, game)
   end
 
+  def handle_info(
+        %Phoenix.Socket.Broadcast{
+          event: "presence_diff",
+          payload: %{joins: _joins, leaves: leaves}
+        },
+        %Game{} = game
+      ) do
+    # TODO: If leaves, set a timer to check if reconnect else leave depending on game stage
+    players_leaving =
+      Enum.map(
+        leaves,
+        fn {_id, %{metas: metas}} ->
+          struct(Player, Map.from_struct(hd(metas)))
+        end
+      )
+
+    leave(players_leaving, game)
+  end
+
   @spec handle_call(:state, {pid, term()}, Game.t()) :: {:reply, Game.t(), Game.t()}
   def handle_call(:state, _from, %Game{} = game) do
     {:reply, game, game}
   end
 
-  @spec handle_cast({:join, Player.t()}, Game.t()) :: {:noreply, Game.t()}
-  def handle_cast({:join, player}, %Game{} = game) do
-    if length(game.players) >= game.settings.max_players do
-      {:noreply, broadcast_game_error(game, dgettext("errors", "Game is full"))}
-    else
-      game = %{game | players: [player | game.players]}
-
-      {:noreply, broadcast_game_update(game)}
-    end
+  @spec handle_call({:join, Player.t()}, {pid, term()}, Game.t()) ::
+          {:reply, {:ok, Game.t()}, Game.t()} | {:reply, {:error, :game_full}, Game.t()}
+  def handle_call({:join, player}, _from, %Game{} = game) do
+    join(player, game)
   end
 
   @spec handle_cast({:leave, Player.t()}, Game.t()) :: {:noreply, Game.t()}
   def handle_cast({:leave, player}, %Game{} = game) do
-    game = %{game | players: Enum.filter(game.players, fn p -> p != player end)}
-
-    if Enum.empty?(game.players) do
-      broadcast_game_end(game, "no players left")
-      {:stop, {:shutdown, :no_players_left}, game}
-    else
-      game =
-        if player == game.owner do
-          %{game | owner: Enum.random(game.players)}
-        else
-          game
-        end
-
-      {:noreply, broadcast_game_update(game)}
-    end
+    leave([player], game)
   end
 
   @spec handle_cast(:next_stage, Game.t()) :: {:noreply, Game.t()}
@@ -166,5 +168,44 @@ defmodule MemeGame.GameServer do
   def broadcast_game_error(%Game{} = game, error) do
     MemeGame.PubSub.broadcast_error(game, error)
     game
+  end
+
+  @spec leave([Player.t()], Game.t()) ::
+          {:noreply, Game.t()} | {:stop, {:shutdown, :no_players_left}, Game.t()}
+  defp leave(players, game) do
+    game = %{game | players: game.players -- players}
+
+    if Enum.empty?(game.players) do
+      broadcast_game_end(game, "no players left")
+      {:stop, {:shutdown, :no_players_left}, game}
+    else
+      game =
+        if Enum.any?(game.players, fn player -> player == game.owner end) do
+          game
+        else
+          %{game | owner: Enum.random(game.players)}
+        end
+
+      {:noreply, broadcast_game_update(game)}
+    end
+  end
+
+  @spec join(map(), Game.t()) ::
+          {:reply, {:ok, Game.t()}, Game.t()} | {:reply, {:error, String.t()}, Game.t()}
+  defp join(player, %Game{} = game) do
+    if Game.player_in_game?(player, game) do
+      {:reply, {:ok, game}, game}
+    else
+      case Game.can_join?(game, player) do
+        {:ok, game} ->
+          game = %{game | players: game.players ++ [player]}
+          {:reply, {:ok, game}, broadcast_game_update(game)}
+
+        {:error, reasons} ->
+          reason = Enum.join(reasons, " ")
+          broadcast_game_error(game, reason)
+          {:reply, {:error, reason}, game}
+      end
+    end
   end
 end

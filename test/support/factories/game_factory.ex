@@ -52,7 +52,7 @@ defmodule MemeGame.GameFactory do
         %MemeGame.Game{
           id: Faker.UUID.v4(),
           owner: owner,
-          stage: "summary",
+          stage: "round_summary",
           players: [owner, player2, player3, player4],
           settings: build(:settings),
           current_round: 1,

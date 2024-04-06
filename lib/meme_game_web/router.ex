@@ -13,10 +13,6 @@ defmodule MemeGameWeb.Router do
     plug :put_root_layout, html: {MemeGameWeb.Layouts, :root}
   end
 
-  pipeline :game do
-    plug MemeGameWeb.Accounts.SetPlayer
-  end
-
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -31,10 +27,12 @@ defmodule MemeGameWeb.Router do
   end
 
   scope "/game", MemeGameWeb do
-    pipe_through [:browser, :template, :game]
+    pipe_through [:browser, :template]
 
-    live_session :game_session do
+    live_session :game_session,
+      on_mount: [{MemeGameWeb.Accounts.PlayerHook, :ensure_player_in_session}] do
       live "/", GameLive
+      live "/:game_id", GameLive
     end
   end
 

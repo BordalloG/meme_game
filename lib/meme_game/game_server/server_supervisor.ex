@@ -9,8 +9,6 @@ defmodule MemeGame.GameServer.Supervisor do
 
   alias MemeGame.GameServer.ServerName
 
-  import MemeGameWeb.Gettext
-
   def start_link(init_arg) do
     DynamicSupervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
@@ -20,13 +18,13 @@ defmodule MemeGame.GameServer.Supervisor do
   end
 
   @spec start_new_game_server(String.t(), MemeGame.Game.Player.t(), String.t()) ::
-          {:ok, pid()} | {:error, String.t()}
+          {:ok, pid()} | {:error, atom()}
   def start_new_game_server(game_id, owner, locale \\ "en") do
     spec = {MemeGame.GameServer, %{game_id: game_id, owner: owner, locale: locale}}
 
     case ServerName.get_game_pid(game_id) do
       {:ok, _pid} ->
-        {:error, "#{dgettext("errors", "Game already exists")} game_id: #{game_id}"}
+        {:error, :game_already_exist}
 
       _ ->
         {:ok, pid} = DynamicSupervisor.start_child(__MODULE__, spec)

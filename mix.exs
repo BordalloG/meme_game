@@ -63,7 +63,8 @@ defmodule MemeGame.MixProject do
       {:ex_machina, "~> 2.7.0", only: :test},
       {:machinery, "~> 1.1.0"},
       {:faker, "~> 0.18", only: :test},
-      {:elixir_uuid, "~> 1.2"}
+      {:elixir_uuid, "~> 1.2"},
+      {:nanoid, "~> 2.1.0"}
     ]
   end
 

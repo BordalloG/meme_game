@@ -23,7 +23,7 @@ defmodule MemeGame.SupervisorTest do
 
       assert Process.alive?(pid)
       assert {:error, reason} = Supervisor.start_new_game_server(game_id, owner, "en")
-      assert reason == "Game already exists game_id: #{game_id}"
+      assert reason == :game_already_exist
     end
   end
 

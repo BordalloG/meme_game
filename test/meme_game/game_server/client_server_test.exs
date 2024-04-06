@@ -25,6 +25,8 @@ defmodule MemeGame.ClientServerTest do
 
       assert Enum.any?(game.players, fn p -> p == game.owner end)
       assert length(game.players) == 1
+
+      MemeGame.GameServer.Supervisor.stop_game_server(game.id)
     end
   end
 
@@ -38,10 +40,11 @@ defmodule MemeGame.ClientServerTest do
 
   describe "join/2" do
     test "should add a player to the players list", %{game: game} do
-      player = build(:player)
+      player = build(:player, %{nick: "Lucian"})
 
-      Client.join(game.id, player)
+      {:ok, game} = Client.join(game.id, player)
 
+      assert Enum.any?(game.players, fn p -> p == player end)
       assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: payload}
       assert Enum.any?(payload.players, fn p -> p == player end)
     end
@@ -49,13 +52,13 @@ defmodule MemeGame.ClientServerTest do
     test "should not add a player when room is full", %{game: game} do
       Enum.each(1..(game.settings.max_players - 1), fn i ->
         player = build(:player, %{id: "#{i}", nick: "Player#{i}"})
-        Client.join(game.id, player)
+        {:ok, _} = Client.join(game.id, player)
         assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _payload}
       end)
 
       player = build(:player, %{id: "007", nick: "James"})
-      Client.join(game.id, player)
-      assert_receive %Phoenix.Socket.Broadcast{event: "error", payload: "Game is full"}
+      {:error, _} = Client.join(game.id, player)
+      assert_receive %Phoenix.Socket.Broadcast{event: "error", payload: "Game is already full"}
     end
   end
 
@@ -63,9 +66,12 @@ defmodule MemeGame.ClientServerTest do
     test "should remove a player from the players list", %{game: game} do
       player = build(:player, %{id: "abcd", nick: "Philip"})
 
-      Client.leave(game.id, player)
+      Client.join(game.id, player)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _payload}
 
+      Client.leave(game.id, player)
       assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: payload}
+
       refute Enum.any?(payload.players, fn p -> p == player end)
     end
 
@@ -118,7 +124,7 @@ defmodule MemeGame.ClientServerTest do
   describe "submit_meme/2" do
     test "should append the meme in the list of memes for the current round", %{game: game} do
       # add a new player, otherwise we can't transtition to design stage
-      Client.join(game.id, build(:player))
+      Client.join(game.id, build(:player, %{nick: "Link"}))
       # go to design stage
       Client.next_stage(game.id)
 
@@ -147,7 +153,7 @@ defmodule MemeGame.ClientServerTest do
     test "should discart the meme if the player has already sent a meme for the current round", %{
       game: game
     } do
-      player = build(:player, %{id: "123"})
+      player = build(:player, %{id: "123", nick: "Loren"})
       # add a new player, otherwise we can't transtition to design stage
       Client.join(game.id, player)
       assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _join_response}
@@ -172,7 +178,7 @@ defmodule MemeGame.ClientServerTest do
 
     test "should transition to the next stage when the meme received was the last one possible",
          %{game: game} do
-      player = build(:player, %{id: "123"})
+      player = build(:player, %{id: "123", nick: "Phil"})
       # add a new player, otherwise we can't transtition to design stage
       Client.join(game.id, player)
       assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _join_response}

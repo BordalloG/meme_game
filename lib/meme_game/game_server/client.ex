@@ -15,9 +15,9 @@ defmodule MemeGame.GameServer.Client do
     call(game_id, :state)
   end
 
-  @spec join(game_id, Player.t()) :: :ok
+  @spec join(game_id, Player.t()) :: {:ok, Game.t()} | {:error, atom()}
   def join(game_id, player) do
-    cast(game_id, {:join, player})
+    call(game_id, {:join, player})
   end
 
   @spec leave(game_id, Player.t()) :: :ok

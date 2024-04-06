@@ -84,7 +84,7 @@ defmodule MemeGame.GameTest do
     end
 
     test "round_summary -> scoreboard when transition is valid" do
-      game = build(:game, %{stage: "round_summary"})
+      game = build(:ongoing_game)
 
       {:ok, updated_game} = Game.next_stage(game)
 
@@ -224,6 +224,21 @@ defmodule MemeGame.GameTest do
           m -> assert m.score == Game.calculate_meme_score(updated_game, m)
         end
       )
+    end
+  end
+
+  describe "player_in_game?/2" do
+    test "should return true when the given player is in the game" do
+      game = build(:game)
+
+      assert Game.player_in_game?(game.owner, game)
+    end
+
+    test "should return false when the given player is not in the game" do
+      game = build(:game)
+      player = build(:player)
+
+      refute Game.player_in_game?(player, game)
     end
   end
 end
