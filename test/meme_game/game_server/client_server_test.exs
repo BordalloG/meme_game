@@ -1,4 +1,5 @@
 defmodule MemeGame.ClientServerTest do
+  alias Erl2exVendored.Cli
   use MemeGame.DataCase
   use ExUnit.Case, async: true
 
@@ -27,6 +28,23 @@ defmodule MemeGame.ClientServerTest do
       assert length(game.players) == 1
 
       MemeGame.GameServer.Supervisor.stop_game_server(game.id)
+    end
+  end
+
+  describe "check_empty_game/0" do
+    test "should finish the game when there's no players left", %{game: game} do
+      Client.leave(game.id, game.owner)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _payload}
+      assert_receive %Phoenix.Socket.Broadcast{event: "end", payload: _payload}
+    end
+
+    test "should continue the game when at least one player rejoined", %{game: game} do
+      Client.leave(game.id, game.owner)
+      Client.join(game.id, game.owner)
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _payload}
+      assert_receive %Phoenix.Socket.Broadcast{event: "update", payload: _payload}
+
+      assert %Game{} = Client.state(game.id)
     end
   end
 

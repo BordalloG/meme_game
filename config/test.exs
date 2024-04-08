@@ -31,3 +31,6 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+config :meme_game,
+  time_to_live_without_players: 50

@@ -30,6 +30,15 @@ defmodule MemeGame.GameServer do
     GenServer.start_link(__MODULE__, game)
   end
 
+  def handle_info(:check_empty_game, game) do
+    if Enum.empty?(game.players) do
+      broadcast_game_end(game, "no players left")
+      {:stop, {:shutdown, :no_players_left}, game}
+    else
+     {:noreply, game}
+    end
+  end
+
   def handle_info(
         %Phoenix.Socket.Broadcast{
           event: "presence_diff",
@@ -37,7 +46,7 @@ defmodule MemeGame.GameServer do
         },
         %Game{} = game
       ) do
-    # TODO: If leaves, set a timer to check if reconnect else leave depending on game stage
+
     players_leaving =
       Enum.map(
         leaves,
@@ -176,8 +185,8 @@ defmodule MemeGame.GameServer do
     game = %{game | players: game.players -- players}
 
     if Enum.empty?(game.players) do
-      broadcast_game_end(game, "no players left")
-      {:stop, {:shutdown, :no_players_left}, game}
+      Process.send_after(self(), :check_empty_game, Application.fetch_env!(:meme_game, :time_to_live_without_players))
+      {:noreply, broadcast_game_update(game)}
     else
       game =
         if Enum.any?(game.players, fn player -> player == game.owner end) do

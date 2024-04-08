@@ -11,6 +11,9 @@ config :meme_game,
   ecto_repos: [MemeGame.Repo],
   generators: [timestamp_type: :utc_datetime, binary_id: true]
 
+config :meme_game,
+  time_to_live_without_players: 60_000
+
 # Configures the endpoint
 config :meme_game, MemeGameWeb.Endpoint,
   url: [host: "localhost"],
