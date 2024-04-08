@@ -5,13 +5,13 @@ defmodule MemeGameWeb.PageHTML do
 
   def top_wave(assigns) do
     ~H"""
-    <div class="bg-bottom bg-top_wave bg-cover bg-no-repeat w-full h-96"></div>
+    <div class="bg-bottom bg-top_wave bg-cover bg-no-repeat w-full h-2/6"></div>
     """
   end
 
   def bottom_wave(assigns) do
     ~H"""
-    <div class="bg-top bg-bottom_wave bg-cover bg-no-repeat w-full h-96"></div>
+    <div class="bg-top bg-bottom_wave bg-cover bg-no-repeat w-full h-2/6"></div>
     """
   end
 end
