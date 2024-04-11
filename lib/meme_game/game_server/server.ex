@@ -35,7 +35,7 @@ defmodule MemeGame.GameServer do
       broadcast_game_end(game, "no players left")
       {:stop, {:shutdown, :no_players_left}, game}
     else
-     {:noreply, game}
+      {:noreply, game}
     end
   end
 
@@ -46,7 +46,6 @@ defmodule MemeGame.GameServer do
         },
         %Game{} = game
       ) do
-
     players_leaving =
       Enum.map(
         leaves,
@@ -185,7 +184,12 @@ defmodule MemeGame.GameServer do
     game = %{game | players: game.players -- players}
 
     if Enum.empty?(game.players) do
-      Process.send_after(self(), :check_empty_game, Application.fetch_env!(:meme_game, :time_to_live_without_players))
+      Process.send_after(
+        self(),
+        :check_empty_game,
+        Application.fetch_env!(:meme_game, :time_to_live_without_players)
+      )
+
       {:noreply, broadcast_game_update(game)}
     else
       game =

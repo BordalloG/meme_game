@@ -20,9 +20,8 @@ defmodule MemeGameWeb.Router do
   scope "/", MemeGameWeb do
     pipe_through [:browser, :template]
 
-    get "/", PageController, :home
     post "/", PageController, :start_session
-
+    live "/", HomeLive
     live "/game/:game_id/inspect", Game.InspectLive
   end
 
