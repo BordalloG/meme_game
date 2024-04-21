@@ -5,6 +5,9 @@ defmodule MemeGame.PubSub do
 
   alias MemeGame.Game
 
+  @spec chat_topic(String.t()) :: String.t()
+  def chat_topic(game_id), do: "chat:#{game_id}"
+
   @spec game_topic(String.t()) :: String.t()
   def game_topic(game_id) when is_binary(game_id), do: "game:#{game_id}"
 
@@ -13,9 +16,7 @@ defmodule MemeGame.PubSub do
 
   @spec broadcast_game(String.t(), Game.t()) :: atom
   def broadcast_game(event, %Game{} = game) do
-    topic = "game:#{game.id}"
-
-    Phoenix.PubSub.broadcast(MemeGame.PubSub, topic, %Phoenix.Socket.Broadcast{
+    Phoenix.PubSub.broadcast(MemeGame.PubSub, game_topic(game), %Phoenix.Socket.Broadcast{
       topic: game_topic(game),
       event: event,
       payload: game
@@ -24,9 +25,7 @@ defmodule MemeGame.PubSub do
 
   @spec broadcast_error(Game.t(), String.t()) :: atom
   def broadcast_error(%Game{} = game, error) do
-    topic = "game:#{game.id}"
-
-    Phoenix.PubSub.broadcast(MemeGame.PubSub, topic, %Phoenix.Socket.Broadcast{
+    Phoenix.PubSub.broadcast(MemeGame.PubSub, game_topic(game), %Phoenix.Socket.Broadcast{
       topic: game_topic(game),
       event: "error",
       payload: error
@@ -35,11 +34,18 @@ defmodule MemeGame.PubSub do
 
   @spec broadcast_end(Game.t(), String.t()) :: atom
   def broadcast_end(game, message) do
-    topic = "game:#{game.id}"
-
-    Phoenix.PubSub.broadcast(MemeGame.PubSub, topic, %Phoenix.Socket.Broadcast{
+    Phoenix.PubSub.broadcast(MemeGame.PubSub, game_topic(game), %Phoenix.Socket.Broadcast{
       topic: game_topic(game),
       event: "end",
+      payload: message
+    })
+  end
+
+  @spec broadcast_chat_message(String.t(), String.t()) :: atom
+  def broadcast_chat_message(game_id, %{sender: _sender, text: _text} = message) do
+    Phoenix.PubSub.broadcast(MemeGame.PubSub, chat_topic(game_id), %Phoenix.Socket.Broadcast{
+      topic: game_topic(game_id),
+      event: "chat_message",
       payload: message
     })
   end

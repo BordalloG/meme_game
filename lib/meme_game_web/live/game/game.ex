@@ -10,12 +10,14 @@ defmodule MemeGameWeb.GameLive do
       socket
       |> assign(:messages, [])
 
-    topic = MemeGame.PubSub.game_topic(game_id)
+    game_topic = MemeGame.PubSub.game_topic(game_id)
+    chat_topic = MemeGame.PubSub.chat_topic(game_id)
 
     if connected?(socket) && game_id do
       with {:ok, game} <- fetch_game(game_id),
            {:ok, game} <- join(game, socket.assigns.player) do
-        Phoenix.PubSub.subscribe(MemeGame.PubSub, topic)
+        Phoenix.PubSub.subscribe(MemeGame.PubSub, game_topic)
+        Phoenix.PubSub.subscribe(MemeGame.PubSub, chat_topic)
         {:ok, assign(socket, :game, game)}
       else
         {:error, reasons} when is_list(reasons) ->
@@ -67,6 +69,8 @@ defmodule MemeGameWeb.GameLive do
         %Phoenix.Socket.Broadcast{event: "error", payload: error} ->
           put_flash(socket, :error, error)
 
+        %Phoenix.Socket.Broadcast{event: "chat_message", payload: chat_message} ->
+          assign(socket, :messages, socket.assigns.messages ++ [chat_message])
         _ ->
           socket
       end
@@ -79,7 +83,9 @@ defmodule MemeGameWeb.GameLive do
       {:noreply, socket}
     else
       message = %{sender: socket.assigns.player, text: text}
-      {:noreply, assign(socket, :messages, [message | socket.assigns.messages])}
+      MemeGame.PubSub.broadcast_chat_message(socket.assigns.game.id, message)
+
+      {:noreply, push_event(socket, "clear", %{})}
     end
   end
 
@@ -98,26 +104,20 @@ defmodule MemeGameWeb.GameLive do
         <div class="bg-normal-50 w-1/3 py-2 rounded-r"></div>
       </div>
 
-      <div class="w-4/5 h-full flex flex-col bg-neutral-50 shadow-lg rounded text-center p-2 xl:flex-row">
+      <div class="w-4/5 h-full flex flex-col bg-neutral-50 shadow-lg rounded text-center max-h-[90%] p-2 xl:flex-row">
         <%!-- game --%>
         <div class="w-full h-4/5 xl:w-4/5 xl:order-last xl:h-full">
           GAME
         </div>
         <%!-- lateral --%>
-        <div class="w-full mt-4 h-1/5 xl:w-1/5 xl:h-full xl:mr-4 xl:mt-0">
+        <div class="w-full mt-4 h-1/5 xl:w-1/5 xl:h-full xl:max-h-full xl:mr-4 xl:mt-0">
           <div class="hidden xl:block xl:h-1/3 xl:w-full xl:h-1/3">
             <ul class="flex flex-col justify-center items-center text-center">
-              <li
-                :for={player <- @game.players}
-                class="flex justify-center items-center w-3/4 my-2 rounded-lg py-1 bg-gradient-to-b from-primary-100 from-90% via-primary-300 to-primary-600 shadow"
-              >
-                <span :if={player == @game.owner} class="mr-2"><.crown /></span>
-                <span><%= player.nick %></span>
-              </li>
+              <.player :for={p <- @game.players} game={@game} p={p} player={@player} />
             </ul>
           </div>
-          <div class="flex flex-col justify-between rounded border-2 border-secondary-400 h-full xl:h-2/3 bg-neutral-100">
-            <div class="max-h-1/3 overflow-y-auto">
+          <div class="flex flex-col justify-between rounded border-2 border-normal-400 h-full xl:h-2/3 xl:max-h-2/3 bg-neutral-100">
+            <div class="overflow-y-scroll" id="chat" phx-hook="Scroll">
               <ul class="flex flex-col items-start">
                 <.message
                   :for={message <- @messages}
@@ -125,23 +125,25 @@ defmodule MemeGameWeb.GameLive do
                   sender={message.sender}
                   player={@player}
                 />
-                <.message text="Sample 123" sender={@game.owner} player={@player} />
-                <.message text="S" sender={@game.owner} player={@player} />
-                <.message text="is it a sample??" sender={@game.owner} player={@player} />
               </ul>
             </div>
-            <div class="bg-secondary-500 py-2 px-4">
-              <form class="flex justify-center" phx-submit="send_message">
+            <div class="bg-normal-300 py-2 px-4">
+              <.form class="flex justify-center" :let={_f} for={} phx-submit="send_message">
                 <input
+                  id="message_input"
                   type="text"
+                  autocomplete="off"
                   name="message"
-                  class="w-full h-8 p-2 bg-neutral-100 border-2 border-secondary-700 border-r-transparent"
+                  class="w-full h-8 p-2 bg-neutral-100 border-2 border-normal-700 border-r-transparent"
                   placeholder="Start Chatting ..."
+                  phx-hook="MessageInput"
                 />
-                <button class="bg-neutral-200 h-8 p-2 rounded-r-lg border-2 border-secondary-700 border-l-transparent">
-                  <.icon name="hero-paper-airplane-solid" />
+                <button
+                type="submit"
+                class="bg-neutral-200 h-8 p-2 rounded-r-lg border-2 border-normal-700 border-l-transparent flex items-center justify-center">
+                <.icon name="hero-chevron-right"/>
                 </button>
-              </form>
+              </.form>
             </div>
           </div>
         </div>
@@ -156,20 +158,28 @@ defmodule MemeGameWeb.GameLive do
     """
   end
 
-  def message(assigns) do
-    classes =
-      "flex flex-col text-start bg-gradient-to-b from-secondary-100 from-90% to-secondary-400 p-2 m-2 max-w-[85%] rounded shadow-md"
-
+  def player(assigns) do
+    base_classes = "flex justify-center items-center w-3/4 my-2 rounded-lg py-1 bg-gradient-to-b shadow"
+    others_players = "from-secondary-100 from-90% via-secondary-300 to-secondary-600"
+    current_player = "from-primary-100 from-90% via-primary-300 to-primary-600"
     ~H"""
-    <li class={
-      if @sender == @player do
-        classes <> " place-self-end"
-      else
-        classes
-      end
-    }>
-      <span class="text-secondary-900 font-bold"><%= @sender.nick %></span>
-      <span class="text-normal-900"><%= @text %></span>
+    <li
+      class={"#{base_classes} #{if @p == @player do current_player else others_players end}"}
+    >
+      <span :if={@p == @game.owner} class="mr-2"><.crown /></span>
+      <span> <%= @p.nick %> </span>
+    </li>
+    """
+  end
+
+  def message(assigns) do
+    base_classes = "flex flex-col text-xs xl:text-base text-start bg-gradient-to-b from-90% p-2 m-2 max-w-[85%] shadow-md"
+    others_classes = "rounded-e-xl rounded-es-xl from-secondary-100 to-secondary-400"
+    sender_classes = "place-self-end rounded-none rounded-l-lg rounded-ee-xl from-primary-100 to-primary-400" #
+    ~H"""
+    <li class={if assigns.sender == assigns.player do "#{base_classes} #{sender_classes}" else "#{base_classes} #{others_classes}" end}>
+      <span class="text-normal-900 font-bold"><%= @sender.nick %></span>
+      <span class="text-normal-700"><%= @text %></span>
     </li>
     """
   end
