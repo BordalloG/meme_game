@@ -9,7 +9,7 @@ defmodule MemeGame.Application do
   def start(_type, _args) do
     children = [
       MemeGameWeb.Telemetry,
-      # MemeGame.Repo,
+      MemeGame.Repo,
       {DNSCluster, query: Application.get_env(:meme_game, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: MemeGame.PubSub},
       MemeGameWeb.Presence,

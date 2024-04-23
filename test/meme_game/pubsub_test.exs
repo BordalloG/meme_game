@@ -56,4 +56,18 @@ defmodule MemeGame.PubSubTest do
       assert_receive %Phoenix.Socket.Broadcast{topic: ^topic, event: ^event, payload: ^message}
     end
   end
+
+  describe "broadcast_chat_message/2" do
+    test "should broadcast a chat message to the given topic ", %{game: game} do
+      topic = MemeGame.PubSub.chat_topic(game.id)
+      event = "chat_message"
+      chat_message = "aaaa"
+
+      Phoenix.PubSub.subscribe(MemeGame.PubSub, topic)
+
+      MemeGame.PubSub.broadcast_chat_message(game.id, %{sender: build(:player), text: chat_message})
+      assert_receive %Phoenix.Socket.Broadcast{topic: ^topic, event: ^event, payload: payload}
+      assert payload.text == chat_message
+    end
+  end
 end

@@ -1,5 +1,4 @@
 defmodule MemeGame.ClientServerTest do
-  alias Erl2exVendored.Cli
   use MemeGame.DataCase
   use ExUnit.Case, async: true
 

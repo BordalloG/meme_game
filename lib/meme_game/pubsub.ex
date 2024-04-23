@@ -41,10 +41,10 @@ defmodule MemeGame.PubSub do
     })
   end
 
-  @spec broadcast_chat_message(String.t(), String.t()) :: atom
+  @spec broadcast_chat_message(String.t(), map()) :: atom
   def broadcast_chat_message(game_id, %{sender: _sender, text: _text} = message) do
     Phoenix.PubSub.broadcast(MemeGame.PubSub, chat_topic(game_id), %Phoenix.Socket.Broadcast{
-      topic: game_topic(game_id),
+      topic: chat_topic(game_id),
       event: "chat_message",
       payload: message
     })
