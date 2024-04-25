@@ -107,7 +107,7 @@ defmodule MemeGameWeb.GameLive do
       <div class="w-4/5 h-full flex flex-col bg-neutral-50 shadow-lg rounded text-center max-h-[90%] p-2 xl:flex-row">
         <%!-- game --%>
         <div class="w-full h-4/5 xl:w-4/5 xl:order-last xl:h-full">
-          GAME
+          <.game game={@game} player={@player}/>
         </div>
         <%!-- lateral --%>
         <div class="w-full mt-4 h-1/5 xl:w-1/5 xl:h-full xl:max-h-full xl:mr-4 xl:mt-0">
@@ -161,10 +161,18 @@ defmodule MemeGameWeb.GameLive do
   def player(assigns) do
     base_classes = "flex justify-center items-center w-3/4 my-2 rounded-lg py-1 bg-gradient-to-b shadow"
     others_players = "from-secondary-100 from-90% via-secondary-300 to-secondary-600"
-    current_player = "from-primary-100 from-90% via-primary-300 to-primary-600"
+    current_player = "from-primary-100 from-90% via-primary-300 to-primary-600 font-medium"
+
+    classes = if(assigns.p == assigns.player) do
+      current_player
+    else
+      others_players
+    end
+
+    assigns = assign(assigns, :classes, "#{base_classes} #{classes}")
     ~H"""
     <li
-      class={"#{base_classes} #{if @p == @player do current_player else others_players end}"}
+      class={@classes}
     >
       <span :if={@p == @game.owner} class="mr-2"><.crown /></span>
       <span> <%= @p.nick %> </span>
@@ -181,6 +189,24 @@ defmodule MemeGameWeb.GameLive do
       <span class="text-normal-900 font-bold"><%= @sender.nick %></span>
       <span class="text-normal-700"><%= @text %></span>
     </li>
+    """
+  end
+
+  def game(assigns) do
+
+    module = case assigns. game.stage do
+      "wait" -> MemeGameWeb.Game.Stages.WaitComponent
+      "design" -> MemeGameWeb.Game.Stages.DesignComponent
+      "vote" -> MemeGameWeb.Game.Stages.VoteComponent
+      "round_summary" -> MemeGameWeb.Game.Stages.RoundSummaryComponent
+      "scoreboard" -> MemeGameWeb.Game.Stages.ScoreboardComponent
+      "end" -> MemeGameWeb.Game.Stages.EndComponent
+    end
+
+    assigns = assign(assigns, :module, module)
+
+    ~H"""
+      <.live_component :if={@module} module={@module} id="game" game={@game} player={@player} />
     """
   end
 end

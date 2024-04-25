@@ -11,7 +11,7 @@ defmodule MemeGame.Game do
 
   use Machinery,
     field: :stage,
-    states: ["wait", "design", "vote", "round_summary", "score_board", "end"],
+    states: ["wait", "design", "vote", "round_summary", "scoreboard", "end"],
     transitions: %{
       "wait" => "design",
       "design" => "vote",
